@@ -128,6 +128,14 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
 .msg{font-size:20px;line-height:1.45;white-space:pre-wrap;word-break:break-word;margin:0 0 16px}
 .by{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;color:var(--muted)}
 .by strong{color:var(--text)}
+.reacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.reacts[hidden]{display:none}
+.react{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);background:var(--bg);border-radius:999px;padding:6px 12px;min-height:40px;cursor:pointer;font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
+.react .em{font-size:18px;line-height:1}
+.react:hover{border-color:var(--lime)}
+.react[aria-pressed="true"]{border-color:var(--lime);background:var(--lime-dim);color:var(--lime)}
+.react:disabled{opacity:.6;cursor:wait}
+.react-st{width:100%;font-size:13px;color:var(--danger);margin:2px 0 0}
 .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap}
 label.lbl{display:block;font-weight:600;margin:14px 0 6px}
 label.lbl small{color:var(--muted);font-weight:400}
@@ -316,6 +324,8 @@ function SupabaseBackend(url,key){
     report:function(cell,reason){ return sb.rpc('report_memory',{p_cell:cell,p_reason:reason}).then(unwrap); },
     latest:function(n){ return sb.from('memories').select('cell_id,display_name,message,created_at').order('created_at',{ascending:false}).limit(n).then(unwrap); },
     url:function(path){ return path?sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl:''; },
+    getReactions:function(cell){ return sb.rpc('get_reactions',{p_cell:cell,p_visitor:visitorId()}).then(unwrap); },
+    toggleReaction:function(cell,emoji){ return sb.rpc('toggle_reaction',{p_cell:cell,p_emoji:emoji,p_visitor:visitorId()}).then(unwrap); },
     subscribe:function(onChange){
       try{ chan=sb.channel('memory-wall').on('broadcast',{event:'claimed'},function(){ onChange(); }).subscribe(); }catch(e){ chan=null; }
     },
@@ -324,7 +334,8 @@ function SupabaseBackend(url,key){
 }
 /* Preview backend: keeps data in this tab only. Clearly labelled in the UI; never used once Supabase is configured. */
 function PreviewBackend(){
-  var rows={}, files={}, reports={}, reasonsBy={};
+  var rows={}, files={}, reports={}, reasonsBy={}, reacts={};
+  function rsum(cell){ var r=reacts[cell]||{}, counts={}, mine=[]; Object.keys(r).forEach(function(e){ var n=Object.keys(r[e]).length; if(n) counts[e]=n; if(r[e][visitorId()]) mine.push(e); }); return {ok:true,counts:counts,mine:mine}; }
   function delay(v){ return new Promise(function(r){ setTimeout(function(){ r(v); },150); }); }
   return {
     live:false,
@@ -336,6 +347,10 @@ function PreviewBackend(){
       var r={cell_id:p.cell,display_name:p.name,x_username:p.x||null,message:p.message,image_path:p.image||null,thumb_path:p.thumb||null,created_at:new Date().toISOString()};
       rows[p.cell]=r; return delay({ok:true,memory:r}); },
     report:function(cell,reason){ (reasonsBy[cell]=reasonsBy[cell]||[]).unshift(reason); reports[cell]=(reports[cell]||0)+1; if(reports[cell]>=3&&rows[cell]) rows[cell].hidden=true; return delay({ok:true}); },
+    getReactions:function(cell){ return delay(rows[cell]&&!rows[cell].hidden?rsum(cell):{ok:false,error:'not_found'}); },
+    toggleReaction:function(cell,emoji){ if(!rows[cell]||rows[cell].hidden) return delay({ok:false,error:'not_found'});
+      var r=reacts[cell]=reacts[cell]||{}, e=r[emoji]=r[emoji]||{}; if(e[visitorId()]) delete e[visitorId()]; else e[visitorId()]=1; return delay(rsum(cell)); },
+    _reactForTest:function(cell,emoji,n){ var r=reacts[cell]=reacts[cell]||{}, e=r[emoji]=r[emoji]||{}; for(var i=0;i<n;i++) e['other'+i]=1; },
     latest:function(n){ return delay(Object.values(rows).filter(function(r){ return !r.hidden; }).sort(function(a,b){ return a.created_at<b.created_at?1:-1; }).slice(0,n).map(function(r){ return {cell_id:r.cell_id,display_name:r.display_name,message:r.message,created_at:r.created_at}; })); },
     url:function(path){ return files[path]||''; },
     subscribe:function(){}, announce:function(){},
@@ -343,6 +358,13 @@ function PreviewBackend(){
   };
 }
 
+var _vid=null;
+function visitorId(){
+  if(_vid) return _vid;
+  try{ _vid=localStorage.getItem('vibewall-visitor'); }catch(e){}
+  if(!_vid||!/^[A-Za-z0-9-]{8,64}$/.test(_vid)){ _vid=uuid(); try{ localStorage.setItem('vibewall-visitor',_vid); }catch(e){} }
+  return _vid;
+}
 var cfg=window.VIBEWALL_CONFIG||{};
 var configured=!!(cfg.supabaseUrl&&cfg.supabaseAnonKey&&/^https:\/\//.test(cfg.supabaseUrl));
 var api=null;
@@ -619,12 +641,44 @@ function showView(n,m,state){
     body.innerHTML=(m.image_path?'<img class="memimg" alt="Image left with this memory" src="'+esc(api.url(m.image_path))+'">':'')+
       '<p class="msg"></p><div class="by"><strong class="nm"></strong>'+(m.x_username?'<a target="_blank" rel="noopener noreferrer nofollow" href="https://x.com/'+encodeURIComponent(m.x_username)+'">@'+esc(m.x_username)+'</a>':'')+
       '<span>'+esc(d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}))+'</span></div>'+
-      '<div class="foot"><span class="hint" style="margin:0">Cell #'+pad(n)+'</span><button class="btn ghost small" type="button" id="rep-open">Report</button></div><div id="rep-slot"></div>';
+      '<div class="reacts" id="reacts" hidden role="group" aria-label="Reactions"></div><div class="foot"><span class="hint" style="margin:0">Cell #'+pad(n)+'</span><button class="btn ghost small" type="button" id="rep-open">Report</button></div><div id="rep-slot"></div>';
     body.querySelector('.msg').textContent=m.message; body.querySelector('.nm').textContent=m.display_name;
     $('rep-open').onclick=function(){ reportForm(n); };
+    loadReactions(n);
   }
   var dv=$('dlg-view'); if(!dv.open) dv.showModal();
 }
+/* =================== reactions =================== */
+var EMOJI=[['love','💚','Love'],['fire','🔥','Fire'],['clap','👏','Applause'],['haha','😂','Haha']];
+var rx={cell:null,data:null,busy:false};
+function renderReactions(){
+  var box=$('reacts'); if(!box||!rx.data) return;
+  var d=rx.data, mine=d.mine||[], counts=d.counts||{}, h='';
+  EMOJI.forEach(function(e){ var n=counts[e[0]]||0, on=mine.indexOf(e[0])>=0;
+    h+='<button type="button" class="react" data-e="'+e[0]+'" aria-pressed="'+on+'" aria-label="'+e[2]+', '+n+(on?', you reacted':'')+'"'+(rx.busy?' disabled':'')+'><span class="em" aria-hidden="true">'+e[1]+'</span><span>'+n+'</span></button>'; });
+  box.innerHTML=h+'<p class="react-st" id="react-st" role="status"></p>'; box.hidden=false;
+}
+function loadReactions(n){
+  rx.cell=n; rx.data=null; rx.busy=false;
+  if(!api||!api.getReactions) return;
+  api.getReactions(n).then(function(d){ if(rx.cell!==n) return; if(d&&d.ok){ rx.data=d; renderReactions(); } })
+    .catch(function(err){ console.warn('reactions unavailable',err); });   // not installed yet: stay hidden
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('#reacts .react'); if(!b||rx.busy||!rx.data) return;
+  var cell=rx.cell, em=b.dataset.e, prev=JSON.parse(JSON.stringify(rx.data));
+  // optimistic update
+  var mine=rx.data.mine||(rx.data.mine=[]), counts=rx.data.counts||(rx.data.counts={}), i=mine.indexOf(em);
+  if(i>=0){ mine.splice(i,1); counts[em]=Math.max(0,(counts[em]||1)-1); } else { mine.push(em); counts[em]=(counts[em]||0)+1; }
+  rx.busy=true; renderReactions();
+  api.toggleReaction(cell,em).then(function(d){
+    if(rx.cell!==cell) return; rx.busy=false;
+    if(d&&d.ok){ rx.data=d; renderReactions(); }
+    else { rx.data=prev; renderReactions(); $('react-st').textContent=d&&d.error==='rate_limited'?'You’re reacting very fast. Wait a few minutes and try again.':'That reaction didn’t save. Try again.'; }
+  }).catch(function(){ if(rx.cell!==cell) return; rx.busy=false; rx.data=prev; renderReactions(); $('react-st').textContent='That reaction didn’t save. Check your connection.'; });
+  var nb=$('reacts').querySelector('[data-e="'+em+'"]'); if(nb) nb.focus();
+});
+
 function reportForm(n){
   var s=$('rep-slot'); $('rep-open').disabled=true;
   s.innerHTML='<label class="lbl" for="rep-r">Why should this be removed?</label><select class="in" id="rep-r"><option>Spam or advertising</option><option>Offensive or hateful</option><option>Shares someone’s personal information</option><option>Something else</option></select>'+
