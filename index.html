@@ -320,6 +320,11 @@ function SupabaseBackend(url,key){
     claim:function(p){ return sb.rpc('claim_cell',{p_cell:p.cell,p_name:p.name,p_x:p.x,p_message:p.message,p_image:p.image||null,p_thumb:p.thumb||null}).then(unwrap); },
     report:function(cell,reason){ return sb.rpc('report_memory',{p_cell:cell,p_reason:reason}).then(unwrap); },
     latest:function(n){ return sb.from('memories').select('cell_id,display_name,message,created_at').order('created_at',{ascending:false}).limit(n).then(unwrap); },
+    url:function(path){ return path?sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl:''; },
+    subscribe:function(onChange){
+      try{ chan=sb.channel('memory-wall').on('broadcast',{event:'claimed'},function(){ onChange(); }).subscribe(); }catch(e){ chan=null; }
+    },
+    announce:function(cell){ try{ if(chan) chan.send({type:'broadcast',event:'claimed',payload:{cell:cell}}); }catch(e){} }
   };
 }
 /* Preview backend: keeps data in this tab only. Clearly labelled in the UI; never used once Supabase is configured. */
@@ -377,6 +382,21 @@ function showTip(btn){
   tip.style.left=(r.left+r.width/2)+'px'; tip.style.top=r.top+'px'; tip.hidden=false;
 }
 
+/* =================== error reporting =================== */
+var errShown=false;
+function showErr(err,where){
+  console.error(where||'',err);
+  if(errShown) return; errShown=true;
+  var msg=(err&&(err.message||err.reason&&err.reason.message||err.reason))||String(err);
+  var slot=document.createElement('div'); slot.className='banner err';
+  slot.innerHTML='<p><b>Something went wrong'+(where?' ('+esc(where)+')':'')+'.</b> The rest of the wall still works. Error: <code></code></p>';
+  slot.querySelector('code').textContent=String(msg).slice(0,300);
+  var b=document.createElement('button'); b.type='button'; b.className='btn small'; b.textContent='Close'; b.onclick=function(){ slot.remove(); errShown=false; };
+  slot.appendChild(b); $('banner-slot').appendChild(slot);
+}
+window.addEventListener('error',function(e){ showErr(e.error||e.message,'page'); });
+window.addEventListener('unhandledrejection',function(e){ showErr(e.reason,'request'); });
+
 /* =================== stats & overview =================== */
 function renderStats(){
   var occ=wall.size;
@@ -410,7 +430,7 @@ function renderPages(){
   }
   nav.innerHTML=h;
 }
-$('pages').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; page=+b.dataset.p; focusCell=page*PAGE+1; renderGrid(); renderPages(); renderMini(); });
+$('pages').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; page=+b.dataset.p; focusCell=page*PAGE+1; renderPages(); renderGrid(); renderMini(); });
 
 var io=('IntersectionObserver' in window)?new IntersectionObserver(function(entries){
   entries.forEach(function(en){ if(en.isIntersecting){ var el=en.target; if(el.dataset.bg){ el.style.backgroundImage='url("'+el.dataset.bg+'")'; delete el.dataset.bg; } io.unobserve(el); } });
@@ -430,10 +450,12 @@ function renderGrid(){
   g.innerHTML='';
   if(focusCell<a||focusCell>a+PAGE-1) focusCell=a;
   for(var n=a;n<a+PAGE;n++){
-    var b=document.createElement('button'); b.type='button'; b.className=cellClass(n); b.dataset.id=n;
-    b.setAttribute('aria-label',cellLabel(n)); b.tabIndex=(n===focusCell)?0:-1;
-    var w=wall.get(n);
-    if(w&&w.thumb&&!w.hidden){ var u=api.url(w.thumb); if(io){ b.dataset.bg=u; io.observe(b); } else b.style.backgroundImage='url("'+u+'")'; }
+    var b=document.createElement('button'); b.type='button'; b.className='cell'; b.dataset.id=n; b.tabIndex=(n===focusCell)?0:-1;
+    try{
+      b.className=cellClass(n); b.setAttribute('aria-label',cellLabel(n));
+      var w=wall.get(n);
+      if(w&&w.thumb&&!w.hidden){ var u=api.url(w.thumb); if(u){ if(io){ b.dataset.bg=u; io.observe(b); } else b.style.backgroundImage='url("'+u+'")'; } }
+    }catch(err){ showErr(err,'cell '+n); }
     frag.appendChild(b);
   }
   g.appendChild(frag);
