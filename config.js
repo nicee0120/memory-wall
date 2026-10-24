@@ -1,0 +1,4 @@
+window.VIBEWALL_CONFIG = {
+  supabaseUrl: "https://rsrvoxsixmoxmiysrpat.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzcnZveHNpeG1veG1peXNycGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4Njg1NDEsImV4cCI6MjEwODQ0NDU0MX0.Jx_dxTcu4CPpY2p_1Tw0DZvsuKRIRDB7jg-_Vaaegrw"
+};
