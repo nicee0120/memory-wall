@@ -79,6 +79,10 @@ function plausibleUsd(v) {
 async function ethUsd() {
   var url = BASE + '/market/eth-usd', j;
   try { j = await getJson(url, 2); } catch (e) { return { usd: null, raw: 'eth-usd failed: ' + String(e && e.message || e).slice(0, 80) }; }
+  var dd = (j && j.data) || {};
+  if (dd.usdPerEthCents != null && isFinite(Number(dd.usdPerEthCents)) && Number(dd.usdPerEthCents) > 0) {   // vibe/vibe's format: cents
+    return { usd: Number(dd.usdPerEthCents) / 100, raw: null };
+  }
   var keyed = null, any = null;
   (function walk(o, depth) {
     if (!o || typeof o !== 'object' || depth > 4) return;
@@ -86,7 +90,8 @@ async function ethUsd() {
       var v = o[k];
       if (v !== null && typeof v === 'object') { walk(v, depth + 1); return; }
       if (typeof v !== 'number' && !(typeof v === 'string' && /^-?[0-9.]+$/.test(v))) return;
-      if (/block|time|age|ttl|version|chain|decimals|ts$/i.test(k)) return;
+      if (/block|time|age|ttl|version|chain|decimals/i.test(k)) return;
+      if (/cents/i.test(k)) { var c = Number(v) / 100; if (c >= 300 && c <= 50000) { if (keyed === null) keyed = c; return; } }
       var x = plausibleUsd(v); if (x === null) return;
       if (keyed === null && /usd|price|rate|value|eth/i.test(k)) keyed = x;
       if (any === null) any = x;
