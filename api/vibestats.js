@@ -71,7 +71,7 @@ async function pairPrices() {
 
 // ETH price in USD: vibe/vibe's own endpoint if found, else null (the wall then shows ETH only)
 async function ethUsd() {
-  var urls = ['https://testnet.vibevibe.fun/api/v1/eth-usd', BASE + '/eth-usd', BASE + '/v6/eth-usd'];
+  var urls = [BASE + '/market/eth-usd'];
   for (var i = 0; i < urls.length; i++) {
     try {
       var j = await getJson(urls[i], 1);
@@ -86,6 +86,16 @@ async function ethUsd() {
           } else if (typeof v === 'object') walk(v, depth + 1);
         });
       })(j, 0);
+      if (found === null) {                                  // no obvious key name: take the first plausible number
+        (function any(o, depth) {
+          if (found !== null || !o || typeof o !== 'object' || depth > 3) return;
+          Object.keys(o).forEach(function (k) {
+            var v = o[k];
+            if (found === null && (typeof v === 'number' || (typeof v === 'string' && /^[0-9.]+$/.test(v)))) { var n = Number(v); if (n > 1e20) n = n / 1e18; if (n > 100 && n < 100000) found = n; }
+            else if (typeof v === 'object') any(v, depth + 1);
+          });
+        })(j && j.data ? j.data : j, 0);
+      }
       if (found) return found;
     } catch (e) { /* try the next one */ }
   }
@@ -131,6 +141,7 @@ async function collect() {
     chunk.forEach(function (j) { var d = (j && j.data) || {}; (Array.isArray(d.items) ? d.items : []).forEach(function (it) { if (it && it.launch) rows.push(it.launch); }); });
   }
 
+  rows.forEach(function (l) { var a = low(l.tokenAddress), nm = nameOf(l); if (a && nm && !pairNames[a]) pairNames[a] = nm; });   // pairs that are vibe/vibe tokens themselves (e.g. OPENAI)
   var seen = {}, tokens = [];
   rows.forEach(function (l) {
     var addr = low(l.tokenAddress);
