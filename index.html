@@ -188,7 +188,20 @@ body.has-t2 .toast{bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 .cell.crown1{border-color:#FFD24A!important;box-shadow:0 0 0 2px #FFD24A,0 0 14px rgba(255,210,74,.6)}
 .cell.crown2{border-color:#E5E7EB!important;box-shadow:0 0 0 2px #E5E7EB,0 0 12px rgba(229,231,235,.5)}
 .cell.crown3{border-color:#E0A16B!important;box-shadow:0 0 0 2px #E0A16B,0 0 12px rgba(224,161,107,.5)}
-.vstats{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:14px 16px;margin:0 0 22px;max-width:520px}
+.vstats{padding:16px 18px 18px}
+dialog.stats-dlg{width:min(640px,96vw);padding:0}
+dialog.stats-dlg .gbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.vs-sub{font-size:14px;margin:16px 0 8px;color:var(--text)}
+.vs-top{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.vs-top li a{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text);font-variant-numeric:tabular-nums}
+.vs-top li:last-child a{border-bottom:0}
+.vs-top li a:hover{background:var(--panel-2)}
+.vs-top .rk{color:var(--muted);font-weight:800}
+.vs-top li:nth-child(1) .rk{color:#FFD24A}.vs-top li:nth-child(2) .rk{color:#E5E7EB}.vs-top li:nth-child(3) .rk{color:#E0A16B}
+.vs-top .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-top .tr{color:var(--muted);font-size:13px}
+.vs-top .vl{color:var(--lime);font-weight:800}
+@media (max-width:430px){#statsbtn .pl-short{display:none}#statsbtn{padding:8px 11px}}
 .vstats[hidden]{display:none}
 .vs-head{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:10px}
 .vs-head b{flex:1}
@@ -201,7 +214,7 @@ body.has-t2 .toast{bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 #vs-active{overflow:hidden;text-overflow:ellipsis}
 #vs-active small{display:block;margin-top:2px}
 .vs-note{font-size:12px;color:var(--muted);margin:10px 0 0}
-.vs-token{display:inline-flex;gap:6px;margin-top:10px;font-size:14px;text-decoration:none;color:var(--text);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px}
+.vs-token{display:inline-block;margin-top:12px;line-height:1.5;font-size:14px;text-decoration:none;color:var(--text);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px}
 .vs-token:hover{border-color:var(--lime)}
 .vs-token b{color:var(--lime)}
 .vs-token[hidden]{display:none}
@@ -262,6 +275,7 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
       <span class="tag">Memory Wall</span>
     </a>
     <span class="spacer"></span>
+    <button class="btn play" id="statsbtn" type="button" aria-label="Live vibe/vibe stats" hidden><span aria-hidden="true">📊</span> <span class="pl-long">Live stats</span><span class="pl-short">Stats</span></button>
     <button class="btn play" id="play" type="button" aria-label="Play VIBE RUN" hidden><span aria-hidden="true">🎮</span> <span class="pl-long">Play VIBE RUN</span><span class="pl-short">Play</span></button>
     <button class="btn primary" id="cta" type="button"><span class="cta-long">Leave your memory</span><span class="cta-short">+ Memory</span></button>
   </div>
@@ -287,17 +301,6 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
         <div class="stat"><dt>Still free</dt><dd id="s-free">…</dd></div>
       </dl>
       <div class="bar" role="progressbar" aria-label="Wall filled" aria-valuemin="0" aria-valuemax="10000" id="bar"><span id="bar-fill"></span></div>
-      <section class="vstats" id="vstats" hidden aria-labelledby="vs-h">
-        <div class="vs-head"><span class="live-dot" aria-hidden="true"></span><b id="vs-h">vibe/vibe testnet, last 24h</b><a href="https://testnet.vibevibe.fun/" target="_blank" rel="noopener noreferrer">Open vibe/vibe ↗</a></div>
-        <dl class="vs-grid" aria-live="polite">
-          <div><dt>Trades</dt><dd id="vs-trades">…</dd></div>
-          <div><dt>Volume</dt><dd id="vs-vol">…</dd></div>
-          <div><dt>Top token today</dt><dd id="vs-active">…</dd></div>
-          <div><dt>Tokens launched</dt><dd id="vs-total">…</dd></div>
-        </dl>
-        <p class="vs-note" id="vs-note"></p>
-        <a class="vs-token" id="vs-token" hidden target="_blank" rel="noopener noreferrer" href="https://testnet.vibevibe.fun/token/0x0D2D35fE37d14A39F32dBa44bbd924517E18c391">🧱 Memory Wall token: <b id="vs-holders"></b> holders, <b id="vs-wtrades"></b> trades today ↗</a>
-      </section>
       <button class="btn primary" id="cta2" type="button">Leave your memory</button>
     </div>
     <div class="overview">
@@ -340,6 +343,22 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
   <div class="tk-label" aria-hidden="true"><span class="tk-dot"></span><span class="tk-long">VIBE RUN top 10</span><span class="tk-short">Top runners</span></div>
   <section class="tk-view" id="tk2-view" aria-label="VIBE RUN top runners"><div class="tk-track" id="tk2-track"></div></section>
 </div>
+<dialog id="dlg-stats" class="stats-dlg" aria-labelledby="vs-h">
+  <div class="gbar"><b>📊 Live stats</b><button class="x" type="button" id="stats-close" aria-label="Close live stats">✕</button></div>
+      <section class="vstats" id="vstats" aria-labelledby="vs-h">
+        <div class="vs-head"><span class="live-dot" aria-hidden="true"></span><b id="vs-h">vibe/vibe testnet, last 24h</b><a href="https://testnet.vibevibe.fun/" target="_blank" rel="noopener noreferrer">Open vibe/vibe ↗</a></div>
+        <dl class="vs-grid" aria-live="polite">
+          <div><dt>Trades</dt><dd id="vs-trades">…</dd></div>
+          <div><dt>Volume</dt><dd id="vs-vol">…</dd></div>
+          <div><dt>Top token today</dt><dd id="vs-active">…</dd></div>
+          <div><dt>Tokens launched</dt><dd id="vs-total">…</dd></div>
+        </dl>
+        <p class="vs-note" id="vs-note"></p>
+        <h3 class="vs-sub">Top 5 tokens by volume today</h3>
+        <ol class="vs-top" id="vs-top"></ol>
+        <a class="vs-token" id="vs-token" hidden target="_blank" rel="noopener noreferrer" href="https://testnet.vibevibe.fun/token/0x0D2D35fE37d14A39F32dBa44bbd924517E18c391">🧱 Memory Wall token: <b id="vs-holders"></b> holders, <b id="vs-wtrades"></b> trades today ↗</a>
+      </section>
+</dialog>
 <dialog id="dlg-game" class="game" aria-label="VIBE RUN">
   <div class="gbar"><b>🎮 VIBE RUN</b><button class="x" type="button" id="game-close" aria-label="Close the game">✕</button></div>
   <iframe id="game-frame" title="VIBE RUN game" allow="autoplay; fullscreen"></iframe>
@@ -966,7 +985,7 @@ function renderRunTicker(top){
   function item(r,clone){
     var b=document.createElement('button'); b.type='button'; b.className='tk-item';
     if(clone){ b.tabIndex=-1; b.setAttribute('aria-hidden','true'); }
-    if(r.stat){ b.innerHTML='<span class="tk-no">'+r.icon+'</span><strong></strong><span class="tk-tx"></span>'; b.querySelector('strong').textContent=r.title; b.querySelector('.tk-tx').textContent=r.text; b.dataset.href=r.href; if(!clone) b.setAttribute('aria-label',r.title+' '+r.text+'. Opens vibe/vibe'); return b; }
+    if(r.stat){ b.innerHTML='<span class="tk-no">'+r.icon+'</span><strong></strong><span class="tk-tx"></span>'; b.querySelector('strong').textContent=r.title; b.querySelector('.tk-tx').textContent=r.text; b.dataset.href=r.href; if(!clone) b.setAttribute('aria-label',r.title+' '+r.text+'. Opens live stats'); return b; }
     if(!r.rank){ b.innerHTML='<strong>No runners yet.</strong><span class="tk-tx">Be the first on the VIBE RUN leaderboard.</span>'; }
     else { var cls=r.rank===1?'g':r.rank===2?'s':r.rank===3?'b':''; b.innerHTML='<span class="rk '+cls+'">#'+r.rank+'</span><span class="tk-no">'+String(r.score).padStart(5,'0')+'</span><span class="tk-tx"></span>';
       b.querySelector('.tk-tx').textContent=shortW(r.wallet)+(r.reached_moon?' 🚀':''); if(!clone) b.setAttribute('aria-label','Rank '+r.rank+', '+r.score+' points. Play VIBE RUN'); }
@@ -980,7 +999,7 @@ function renderRunTicker(top){
   var w=g1.scrollWidth; tr.style.setProperty('--tk-dist',w+'px'); tr.style.setProperty('--tk-dur',Math.max(18,w/55).toFixed(1)+'s');
   void tr.offsetWidth; tr.classList.add('run');
 }
-$('tk2-track').addEventListener('click',function(e){ var it=e.target.closest('.tk-item'); if(!it) return; if(it.dataset.href){ window.open(it.dataset.href,'_blank','noopener'); return; } openGame(); });
+$('tk2-track').addEventListener('click',function(e){ var it=e.target.closest('.tk-item'); if(!it) return; if(it.dataset.href){ openStats(); return; } openGame(); });
 
 /* =================== live vibe/vibe testnet stats =================== */
 var STATS_URL='/api/vibestats', vstats=null;
@@ -1006,8 +1025,18 @@ function renderVstats(){
   $('vs-note').textContent='Across the '+d.sampleTokens+' most active tokens. Live from vibe/vibe public data, updated '+agoText(d.asOf)+'.';
   var w=d.wallToken;
   if(w&&w.holders!=null){ $('vs-holders').textContent=fmtInt(w.holders); $('vs-wtrades').textContent=fmtInt(w.trades24h); $('vs-token').hidden=false; }
-  $('vstats').hidden=false;
+  var ol=$('vs-top'); ol.innerHTML='';
+  (d.top||[]).forEach(function(t,i){ var li=document.createElement('li'), a=document.createElement('a');
+    a.href='https://testnet.vibevibe.fun/token/'+t.token; a.target='_blank'; a.rel='noopener noreferrer';
+    a.innerHTML='<span class="rk">#'+(i+1)+'</span><span class="nm"></span><span class="tr"></span><span class="vl"></span>';
+    a.querySelector('.nm').textContent='$'+(t.name||shortW(t.token)); a.querySelector('.tr').textContent=fmtInt(t.trades24h)+' trades'; a.querySelector('.vl').textContent=fmtEth(t.volumeEth)+' ETH';
+    li.appendChild(a); ol.appendChild(li); });
+  $('statsbtn').hidden=false;
 }
+function openStats(){ if(!vstats) return; renderVstats(); var d=$('dlg-stats'); if(!d.open) d.showModal(); }
+$('statsbtn').addEventListener('click',openStats);
+$('stats-close').addEventListener('click',function(){ $('dlg-stats').close(); });
+$('dlg-stats').addEventListener('click',function(e){ if(e.target===this) this.close(); });
 function loadVstats(){
   if(!window.fetch) return;
   fetch(STATS_URL,{headers:{accept:'application/json'}}).then(function(r){ return r.ok?r.json():null; }).then(function(d){
