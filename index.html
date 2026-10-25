@@ -202,6 +202,10 @@ dialog.stats-dlg{width:min(760px,96vw);padding:0}
 .heat a:hover{outline:2px solid var(--lime);outline-offset:-2px;z-index:2}
 .heat .hn{font-weight:800}
 .heat .hc{font-size:12px;opacity:.9;font-variant-numeric:tabular-nums}
+.heat-more{position:absolute;display:flex;align-items:center;justify-content:center;background:#1b1d20;color:var(--muted);border:1px solid #000;font-weight:700}
+.heat .hn{white-space:nowrap;overflow:hidden;max-width:100%}
+.heat .hc{white-space:nowrap;overflow:hidden;max-width:100%}
+.heat-info{min-height:20px;font-size:13px;color:var(--text);margin-top:8px}
 .heat-key{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px;gap:10px;flex-wrap:wrap}
 .whales{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:420px;overflow-y:auto}
 .whales li a{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
@@ -392,6 +396,7 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
         </div>
         <div class="vs-pane" id="pane-hm" role="tabpanel" hidden>
           <div class="heat" id="heat" aria-label="Heatmap of the most active tokens"></div>
+          <div class="heat-info" id="heat-info" aria-live="polite"></div>
           <div class="heat-key"><span>Tile size: 24h volume</span><span><span style="color:#22E07A">■</span> price up &nbsp; <span style="color:#FF4D5E">■</span> price down &nbsp; <span style="color:#555">■</span> no data</span></div>
         </div>
         <div class="vs-pane" id="pane-wh" role="tabpanel" hidden>
@@ -1101,18 +1106,36 @@ function heatColor(bps){
 }
 function renderHeat(){
   var box=$('heat'); if(!box||!vstats) return; box.innerHTML='';
-  var items=(vstats.heatmap||[]).filter(function(t){return t.volumeEth>0;});
-  if(!items.length){ box.innerHTML='<p class="vs-note" style="padding:16px">No data yet.</p>'; return; }
-  var W=box.clientWidth||700, H=box.clientHeight||380, rects=squarify(items.map(function(t){return t.volumeEth;}),W,H);
+  var all=(vstats.heatmap||[]).filter(function(t){return t.volumeEth>0;});
+  if(!all.length){ box.innerHTML='<p class="vs-note" style="padding:16px">No data yet.</p>'; return; }
+  var SHOW=window.innerWidth<520?14:30, items=all.slice(0,SHOW), rest=all.slice(SHOW);
+  var vals=items.map(function(t){return t.volumeEth;});
+  var restVol=rest.reduce(function(a,t){return a+t.volumeEth;},0);
+  if(rest.length) vals.push(Math.max(restVol,vals[vals.length-1]*1.5));
+  var W=box.clientWidth||700, H=box.clientHeight||380, rects=squarify(vals,W,H);
+  var mc=(renderHeat.c||(renderHeat.c=document.createElement('canvas'))).getContext('2d');
+  function textW(text,size,weight){ mc.font=(weight||800)+' '+size+'px Archivo, "Helvetica Neue", Arial, sans-serif'; return mc.measureText(text).width; }
+  function fit(text,w,h,max,weight){ var at10=textW(text,10,weight)||1, byW=(w-6)/at10*10, byH=h*0.42; return Math.floor(Math.min(max,byW,byH)); }
   items.forEach(function(t,i){ var r=rects[i]; if(!r) return;
     var a=document.createElement('a'); a.href='https://testnet.vibevibe.fun/token/'+t.token; a.target='_blank'; a.rel='noopener noreferrer';
     a.style.left=r.x+'px'; a.style.top=r.y+'px'; a.style.width=r.w+'px'; a.style.height=r.h+'px'; a.style.background=heatColor(t.change24hBps);
-    var nm='$'+(t.name||shortW(t.token)), chg=t.change24hBps==null?'':((t.change24hBps>=0?'+':'')+(t.change24hBps/100).toFixed(1)+'%');
-    a.title=nm+'  '+fmtEth(t.volumeEth)+' ETH  '+(chg||'no price change data');
-    var big=Math.min(r.w,r.h);
-    if(big>34){ var n=document.createElement('span'); n.className='hn'; n.textContent=nm; n.style.fontSize=Math.max(10,Math.min(20,big/4))+'px'; a.appendChild(n);
-      if(big>52){ var c=document.createElement('span'); c.className='hc'; c.textContent=(chg?chg+'  ':'')+fmtEth(t.volumeEth)+' ETH'; a.appendChild(c); } }
+    var nm='$'+(t.name||shortW(t.token)), chg=t.change24hBps==null?'':((t.change24hBps>=0?'+':'')+(Math.abs(t.change24hBps)>=100000?Math.round(t.change24hBps/100):(t.change24hBps/100).toFixed(1))+'%');
+    var info=nm+'  '+fmtEth(t.volumeEth)+' ETH'+(chg?'  '+chg:'');
+    a.title=info; a.setAttribute('aria-label',info);
+    var label=nm, fs=fit(label,r.w,r.h,22);
+    if(fs<8){ label=nm.slice(1); fs=fit(label,r.w,r.h,22); }                 // drop the $ first
+    while(fs<8&&label.length>2){ label=label.slice(0,-1); fs=fit(label+'…',r.w,r.h,22); if(fs>=8) label+='…'; }   // then shorten
+    if(fs>=7){ var n=document.createElement('span'); n.className='hn'; n.textContent=label; n.style.fontSize=Math.max(8,fs)+'px'; a.appendChild(n);
+      var sub=(chg?chg+'  ':'')+fmtEth(t.volumeEth)+' ETH', fs2=Math.min(13,Math.floor(fs*0.7),fit(sub,r.w,r.h,13,600));
+      if(r.h>fs*2.4&&fs2>=9){ var c=document.createElement('span'); c.className='hc'; c.textContent=sub; c.style.fontSize=fs2+'px'; a.appendChild(c); } }
+    // touch: first tap shows the info, second tap opens the token
+    a.addEventListener('click',function(e){ if(matchMedia('(hover: none)').matches&&a.dataset.armed!=='1'){ e.preventDefault(); [].forEach.call(box.querySelectorAll('[data-armed]'),function(x){x.removeAttribute('data-armed');}); a.dataset.armed='1'; $('heat-info').textContent=info+'  (tap again to open)'; } });
     box.appendChild(a); });
+  if(rest.length){ var r=rects[items.length]; if(r){ var o=document.createElement('div'); o.className='heat-more';
+    o.style.left=r.x+'px'; o.style.top=r.y+'px'; o.style.width=r.w+'px'; o.style.height=r.h+'px';
+    var t1='+'+rest.length+' more', f=fit(t1,r.w,r.h,16); o.innerHTML='<span class="hn"></span>'; o.firstChild.textContent=f>=9?t1:'+'; o.firstChild.style.fontSize=Math.max(9,f)+'px';
+    o.title=rest.length+' more tokens, '+fmtEth(restVol)+' ETH together'; box.appendChild(o); } }
+  $('heat-info').textContent='';
 }
 function renderWhales(){
   var ol=$('whales'); if(!ol||!vstats) return; ol.innerHTML='';
