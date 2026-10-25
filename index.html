@@ -128,6 +128,8 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
 .msg{font-size:20px;line-height:1.45;white-space:pre-wrap;word-break:break-word;margin:0 0 16px}
 .by{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;color:var(--muted)}
 .by strong{color:var(--text)}
+.wallet{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;color:var(--muted)}
+.wallet code{color:var(--text);background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:5px 9px;font-size:14px}
 .reacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .reacts[hidden]{display:none}
 .react{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);background:var(--bg);border-radius:999px;padding:6px 12px;min-height:40px;cursor:pointer;font-size:15px;font-variant-numeric:tabular-nums;color:var(--text)}
@@ -281,6 +283,9 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
     <label class="lbl" for="f-x">X username <small>(optional)</small></label>
     <input class="in" id="f-x" name="x" maxlength="16" placeholder="@yourhandle" autocomplete="off" autocapitalize="off" spellcheck="false">
     <div class="err-text" id="e-x"></div>
+    <label class="lbl" for="f-wallet">Wallet address <small>(optional, shown publicly with your memory)</small></label>
+    <input class="in" id="f-wallet" name="wallet" maxlength="42" placeholder="0x…" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text">
+    <div class="err-text" id="e-wallet"></div>
     <label class="lbl" for="f-msg">Your message</label>
     <textarea class="in" id="f-msg" name="message" maxlength="280" required></textarea>
     <div class="count" id="f-count">0 / 280</div>
@@ -317,10 +322,16 @@ function SupabaseBackend(url,key){
   return {
     live:true,
     getWall:function(){ return sb.rpc('get_wall').then(unwrap); },
-    getMemory:function(cell){ return sb.from('memories').select('cell_id,display_name,x_username,message,image_path,thumb_path,created_at').eq('cell_id',cell).maybeSingle().then(unwrap); },
+    getMemory:function(cell){
+      var base='cell_id,display_name,x_username,message,image_path,thumb_path,created_at';
+      return sb.from('memories').select(base+',wallet').eq('cell_id',cell).maybeSingle().then(function(r){
+        if(r.error&&/wallet/i.test(r.error.message||'')) return sb.from('memories').select(base).eq('cell_id',cell).maybeSingle().then(unwrap);  // wallet column not added yet
+        return unwrap(r);
+      });
+    },
     search:function(q){ return sb.rpc('search_memories',{q:q}).then(unwrap); },
     upload:function(path,blob){ return sb.storage.from(BUCKET).upload(path,blob,{contentType:blob.type,upsert:false,cacheControl:'31536000'}).then(function(r){ if(r.error) throw r.error; return path; }); },
-    claim:function(p){ return sb.rpc('claim_cell',{p_cell:p.cell,p_name:p.name,p_x:p.x,p_message:p.message,p_image:p.image||null,p_thumb:p.thumb||null}).then(unwrap); },
+    claim:function(p){ return sb.rpc('claim_cell',{p_cell:p.cell,p_name:p.name,p_x:p.x,p_message:p.message,p_image:p.image||null,p_thumb:p.thumb||null,p_wallet:p.wallet||null}).then(unwrap); },
     report:function(cell,reason){ return sb.rpc('report_memory',{p_cell:cell,p_reason:reason}).then(unwrap); },
     latest:function(n){ return sb.from('memories').select('cell_id,display_name,message,created_at').order('created_at',{ascending:false}).limit(n).then(unwrap); },
     url:function(path){ return path?sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl:''; },
@@ -344,7 +355,7 @@ function PreviewBackend(){
     search:function(q){ q=q.replace(/^@/,'').toLowerCase(); return delay(Object.values(rows).filter(function(r){ return !r.hidden&&(r.display_name.toLowerCase().indexOf(q)>=0||(r.x_username||'').toLowerCase().indexOf(q)>=0); }).slice(0,50)); },
     upload:function(path,blob){ files[path]=URL.createObjectURL(blob); return delay(path); },
     claim:function(p){ if(rows[p.cell]) return delay({ok:false,error:'taken'});
-      var r={cell_id:p.cell,display_name:p.name,x_username:p.x||null,message:p.message,image_path:p.image||null,thumb_path:p.thumb||null,created_at:new Date().toISOString()};
+      var r={cell_id:p.cell,display_name:p.name,x_username:p.x||null,message:p.message,image_path:p.image||null,thumb_path:p.thumb||null,wallet:p.wallet||null,created_at:new Date().toISOString()};
       rows[p.cell]=r; return delay({ok:true,memory:r}); },
     report:function(cell,reason){ (reasonsBy[cell]=reasonsBy[cell]||[]).unshift(reason); reports[cell]=(reports[cell]||0)+1; if(reports[cell]>=3&&rows[cell]) rows[cell].hidden=true; return delay({ok:true}); },
     getReactions:function(cell){ return delay(rows[cell]&&!rows[cell].hidden?rsum(cell):{ok:false,error:'not_found'}); },
@@ -641,6 +652,7 @@ function showView(n,m,state){
     body.innerHTML=(m.image_path?'<img class="memimg" alt="Image left with this memory" src="'+esc(api.url(m.image_path))+'">':'')+
       '<p class="msg"></p><div class="by"><strong class="nm"></strong>'+(m.x_username?'<a target="_blank" rel="noopener noreferrer nofollow" href="https://x.com/'+encodeURIComponent(m.x_username)+'">@'+esc(m.x_username)+'</a>':'')+
       '<span>'+esc(d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}))+'</span></div>'+
+      (m.wallet?'<div class="wallet"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h15a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7zm0 0l2-3h11v3M16 13.5h2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><code title="'+esc(m.wallet)+'">'+esc(m.wallet.slice(0,6)+'…'+m.wallet.slice(-4))+'</code><button type="button" class="btn ghost small" id="w-copy" data-w="'+esc(m.wallet)+'">Copy address</button></div>':'')+
       '<div class="reacts" id="reacts" hidden role="group" aria-label="Reactions"></div><div class="foot"><span class="hint" style="margin:0">Cell #'+pad(n)+'</span><button class="btn ghost small" type="button" id="rep-open">Report</button></div><div id="rep-slot"></div>';
     body.querySelector('.msg').textContent=m.message; body.querySelector('.nm').textContent=m.display_name;
     $('rep-open').onclick=function(){ reportForm(n); };
@@ -648,6 +660,13 @@ function showView(n,m,state){
   }
   var dv=$('dlg-view'); if(!dv.open) dv.showModal();
 }
+document.addEventListener('click',function(e){
+  var b=e.target.closest('#w-copy'); if(!b) return;
+  var w=b.dataset.w, done=function(){ b.textContent='Copied'; setTimeout(function(){ b.textContent='Copy address'; },1600); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(w).then(done,function(){ window.prompt('Copy the address:',w); });
+  else window.prompt('Copy the address:',w);
+});
+
 /* =================== reactions =================== */
 var EMOJI=[['love','💚','Love'],['fire','🔥','Fire'],['clap','👏','Applause'],['haha','😂','Haha']];
 var rx={cell:null,data:null,busy:false};
@@ -703,7 +722,7 @@ function reportForm(n){
 var formCell=null, img=null, openedAt=0, busy=false;
 function openForm(n){
   formCell=n; $('f-no').textContent='#'+pad(n); $('f-no2').textContent='#'+pad(n);
-  ['e-name','e-x','e-msg','e-img'].forEach(function(id){ $(id).textContent=''; });
+  ['e-name','e-x','e-wallet','e-msg','e-img'].forEach(function(id){ $(id).textContent=''; });
   $('f-status').textContent=''; $('f-status').className='status';
   if(!draft){ $('form').reset(); img=null; $('drop-text').textContent='Choose an image or drop it here'; }
   draft=null; openedAt=Date.now(); busy=false; $('f-submit').disabled=false;
@@ -714,10 +733,11 @@ function updatePreview(){
   $('f-count').textContent=l+' / 280'; $('f-count').classList.toggle('over',l>280);
   $('p-msg').textContent=m.trim()||'Your message will appear here.';
   var x=$('f-x').value.trim().replace(/^@/,'');
-  $('p-name').textContent=($('f-name').value.trim()||'Your name')+(x?'  @'+x:'');
+  var wl=$('f-wallet').value.trim();
+  $('p-name').textContent=($('f-name').value.trim()||'Your name')+(x?'  @'+x:'')+(/^0x[0-9a-fA-F]{40}$/.test(wl)?'  '+wl.slice(0,6)+'…'+wl.slice(-4):'');
   $('p-cell').style.backgroundImage=img?'url("'+img.previewUrl+'")':'';
 }
-['f-name','f-x','f-msg'].forEach(function(id){ $(id).addEventListener('input',updatePreview); });
+['f-name','f-x','f-msg','f-wallet'].forEach(function(id){ $(id).addEventListener('input',updatePreview); });
 function loadImage(file){
   return new Promise(function(res,rej){
     var u=URL.createObjectURL(file), im=new Image();
@@ -758,14 +778,16 @@ function extOf(b){ return b.type==='image/webp'?'webp':(b.type==='image/png'?'pn
 var ERR={taken:'Someone just saved a memory in this cell. Your text is kept: pick another free cell and it will be filled in again.',
   rate_limited:'You’ve left several memories in a short time. Please wait a few minutes and try again.',
   invalid_name:'The display name must be 1 to 40 characters.',invalid_message:'The message must be 1 to 280 characters.',
-  invalid_x:'X usernames use only letters, numbers and _ (up to 15).',invalid_image:'The image upload didn’t finish. Remove it or try again.',invalid_cell:'That cell doesn’t exist.'};
+  invalid_x:'X usernames use only letters, numbers and _ (up to 15).',invalid_wallet:'That wallet address isn’t valid. It should start with 0x and have 42 characters.',invalid_image:'The image upload didn’t finish. Remove it or try again.',invalid_cell:'That cell doesn’t exist.'};
 function validate(){
-  var ok=true,name=$('f-name').value.trim(),x=$('f-x').value.trim().replace(/^@/,''),msg=$('f-msg').value.trim();
+  var ok=true,name=$('f-name').value.trim(),x=$('f-x').value.trim().replace(/^@/,''),msg=$('f-msg').value.trim(),wallet=$('f-wallet').value.trim();
+  $('e-wallet').textContent='';
+  if(wallet&&!/^0x[0-9a-fA-F]{40}$/.test(wallet)){ $('e-wallet').textContent='Enter a wallet address that starts with 0x and has 42 characters, or leave it empty.'; ok=false; }
   $('e-name').textContent=''; $('e-x').textContent=''; $('e-msg').textContent='';
   if(name.length<1||name.length>40){ $('e-name').textContent='Enter a display name (up to 40 characters).'; ok=false; }
   if(x&&!/^[A-Za-z0-9_]{1,15}$/.test(x)){ $('e-x').textContent='X usernames use only letters, numbers and _ (up to 15).'; ok=false; }
   if(msg.length<1||msg.length>280){ $('e-msg').textContent='Write a message (up to 280 characters).'; ok=false; }
-  return ok?{name:name.replace(/[\u0000-\u001F\u007F]/g,''),x:x||null,message:msg.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g,'')}:null;
+  return ok?{wallet:wallet?wallet.toLowerCase():null,name:name.replace(/[\u0000-\u001F\u007F]/g,''),x:x||null,message:msg.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g,'')}:null;
 }
 function status(t,kind){ $('f-status').textContent=t; $('f-status').className='status'+(kind?' '+kind:''); }
 $('form').addEventListener('submit',function(e){
@@ -781,7 +803,7 @@ $('form').addEventListener('submit',function(e){
     var up=Promise.resolve({});
     if(img){ status('Uploading image…'); var id=uuid();
       up=Promise.all([api.upload('full/'+id+'.'+extOf(img.full),img.full),api.upload('thumb/'+id+'.'+extOf(img.thumb),img.thumb)]).then(function(p){ return {image:p[0],thumb:p[1]}; }); }
-    return up.then(function(paths){ status('Saving your memory…'); return api.claim({cell:cell,name:v.name,x:v.x,message:v.message,image:paths.image,thumb:paths.thumb}); });
+    return up.then(function(paths){ status('Saving your memory…'); return api.claim({cell:cell,name:v.name,x:v.x,wallet:v.wallet,message:v.message,image:paths.image,thumb:paths.thumb}); });
   }).then(function(r){
     busy=false; $('f-submit').disabled=false;
     if(r&&r.ok){
