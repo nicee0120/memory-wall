@@ -189,7 +189,32 @@ body.has-t2 .toast{bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 .cell.crown2{border-color:#E5E7EB!important;box-shadow:0 0 0 2px #E5E7EB,0 0 12px rgba(229,231,235,.5)}
 .cell.crown3{border-color:#E0A16B!important;box-shadow:0 0 0 2px #E0A16B,0 0 12px rgba(224,161,107,.5)}
 .vstats{padding:16px 18px 18px}
-dialog.stats-dlg{width:min(640px,96vw);padding:0}
+dialog.stats-dlg{width:min(760px,96vw);padding:0}
+.vs-tabs{display:flex;gap:6px;margin:0 0 14px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.vs-tabs button{background:transparent;border:1px solid var(--line-2);border-radius:999px;padding:6px 14px;min-height:36px;cursor:pointer;color:var(--muted);font-weight:600}
+.vs-tabs button[aria-selected="true"]{border-color:var(--lime);color:var(--lime);background:var(--lime-dim)}
+.vs-pane[hidden]{display:none}
+.vs-pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.vs-pairs span{font-size:12px;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px;color:var(--muted)}
+.vs-pairs b{color:var(--text)}
+.heat{position:relative;height:380px;border-radius:12px;overflow:hidden;background:#000}
+.heat a{position:absolute;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;text-decoration:none;color:#fff;border:1px solid #000;overflow:hidden;padding:2px;line-height:1.15}
+.heat a:hover{outline:2px solid var(--lime);outline-offset:-2px;z-index:2}
+.heat .hn{font-weight:800}
+.heat .hc{font-size:12px;opacity:.9;font-variant-numeric:tabular-nums}
+.heat-key{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px;gap:10px;flex-wrap:wrap}
+.whales{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:420px;overflow-y:auto}
+.whales li a{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
+.whales li:last-child a{border-bottom:0}
+.whales li a:hover{background:var(--panel-2)}
+.whales .sd{font-size:12px;font-weight:800;border-radius:6px;padding:3px 0;text-align:center}
+.whales .sd.buy{background:rgba(34,224,122,.15);color:#22E07A}
+.whales .sd.sell{background:rgba(255,77,94,.15);color:#FF6B7A}
+.whales .wt{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.whales .wm{grid-column:2;font-size:12px;color:var(--muted)}
+.whales .wv{grid-row:1 / span 2;grid-column:3;text-align:right;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
+.whales .wv small{display:block;color:var(--muted);font-weight:600}
+@media (max-width:520px){.heat{height:300px}}
 dialog.stats-dlg .gbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line)}
 .vs-sub{font-size:14px;margin:16px 0 8px;color:var(--text)}
 .vs-top{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -347,6 +372,12 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
   <div class="gbar"><b>📊 Live stats</b><button class="x" type="button" id="stats-close" aria-label="Close live stats">✕</button></div>
       <section class="vstats" id="vstats" aria-labelledby="vs-h">
         <div class="vs-head"><span class="live-dot" aria-hidden="true"></span><b id="vs-h">vibe/vibe testnet, last 24h</b><a href="https://testnet.vibevibe.fun/" target="_blank" rel="noopener noreferrer">Open vibe/vibe ↗</a></div>
+        <div class="vs-tabs" role="tablist" aria-label="Live stats views">
+          <button type="button" role="tab" aria-selected="true" data-pane="ov">Overview</button>
+          <button type="button" role="tab" aria-selected="false" data-pane="hm">Heatmap</button>
+          <button type="button" role="tab" aria-selected="false" data-pane="wh">🐋 Whales</button>
+        </div>
+        <div class="vs-pane" id="pane-ov" role="tabpanel">
         <dl class="vs-grid" aria-live="polite">
           <div><dt>Trades</dt><dd id="vs-trades">…</dd></div>
           <div><dt>Volume</dt><dd id="vs-vol">…</dd></div>
@@ -356,7 +387,17 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
         <p class="vs-note" id="vs-note"></p>
         <h3 class="vs-sub">Top 5 tokens by volume today</h3>
         <ol class="vs-top" id="vs-top"></ol>
+        <div class="vs-pairs" id="vs-pairs"></div>
         <a class="vs-token" id="vs-token" hidden target="_blank" rel="noopener noreferrer" href="https://testnet.vibevibe.fun/token/0x0D2D35fE37d14A39F32dBa44bbd924517E18c391">🧱 Memory Wall token: <b id="vs-holders"></b> holders, <b id="vs-wtrades"></b> trades today ↗</a>
+        </div>
+        <div class="vs-pane" id="pane-hm" role="tabpanel" hidden>
+          <div class="heat" id="heat" aria-label="Heatmap of the most active tokens"></div>
+          <div class="heat-key"><span>Tile size: 24h volume</span><span><span style="color:#22E07A">■</span> price up &nbsp; <span style="color:#FF4D5E">■</span> price down &nbsp; <span style="color:#555">■</span> no data</span></div>
+        </div>
+        <div class="vs-pane" id="pane-wh" role="tabpanel" hidden>
+          <p class="vs-note" style="margin:0 0 10px">The biggest buys and sells of the last 24 hours in the busiest tokens.</p>
+          <ol class="whales" id="whales"></ol>
+        </div>
       </section>
 </dialog>
 <dialog id="dlg-game" class="game" aria-label="VIBE RUN">
@@ -1008,31 +1049,89 @@ function fmtEth(n){ if(n>=1000) return (n/1000).toFixed(n>=10000?0:1)+'K'; if(n>
 function agoText(iso){ var m=Math.max(0,Math.round((Date.now()-new Date(iso).getTime())/60000)); return m<1?'just now':m===1?'1 minute ago':m+' minutes ago'; }
 function vstatItems(){
   if(!vstats) return [];
-  var a=[{stat:true,icon:'📊',title:'vibe/vibe 24h',text:fmtInt(vstats.trades24h)+' trades | '+fmtEth(vstats.volume24hEth)+' ETH volume | '+fmtInt(vstats.totalTokens||0)+' tokens launched',href:'https://testnet.vibevibe.fun/'}];
+  var a=[{stat:true,icon:'📊',title:'vibe/vibe 24h',text:fmtInt(vstats.trades24h)+' trades | '+fmtEth(vstats.volume24hEth)+' ETH'+(vstats.volume24hUsd!=null?' ('+fmtUsd(vstats.volume24hUsd)+')':'')+' volume | '+fmtInt(vstats.totalTokens||0)+' tokens launched',href:'https://testnet.vibevibe.fun/'}];
   if(vstats.top&&vstats.top.length) a.push({stat:true,icon:'🔥',title:'Top today',text:vstats.top.map(function(t){ return '$'+(t.name||shortW(t.token))+' '+fmtEth(t.volumeEth)+' ETH'; }).join('  |  '),href:'https://testnet.vibevibe.fun/'});
+  (vstats.whales||[]).slice(0,5).forEach(function(w){ a.push({stat:true,icon:'🐋',title:shortW(w.actor||w.token),text:(w.side==='SELL'?'sold ':'bought ')+fmtEth(w.eth)+' ETH'+(w.usd!=null?' ('+fmtUsd(w.usd)+')':'')+' of $'+(w.name||shortW(w.token))+', '+shortAgo(w.at),href:'#'}); });
   if(vstats.wallToken&&vstats.wallToken.holders!=null) a.push({stat:true,icon:'🧱',title:'Memory Wall token',text:fmtInt(vstats.wallToken.holders)+' holders | '+fmtInt(vstats.wallToken.trades24h)+' trades today',href:'https://testnet.vibevibe.fun/token/0x0D2D35fE37d14A39F32dBa44bbd924517E18c391'});
   return a;
 }
 function renderVstats(){
   var d=vstats; if(!d) return;
   $('vs-trades').innerHTML=fmtInt(d.trades24h)+' <small>'+fmtInt(d.buys24h)+' buys</small>';
-  $('vs-vol').innerHTML=fmtEth(d.volume24hEth)+' <small>ETH</small>';
+  $('vs-vol').innerHTML=fmtEth(d.volume24hEth)+' <small>ETH'+(d.volume24hUsd!=null?' | '+fmtUsd(d.volume24hUsd):'')+'</small>';
+  var pp=$('vs-pairs'); pp.innerHTML='';
+  Object.keys(d.volumeByPair||{}).sort(function(a,b){return d.volumeByPair[b]-d.volumeByPair[a];}).forEach(function(k){ var sp=document.createElement('span'); sp.innerHTML='<b></b> '+fmtEth(d.volumeByPair[k])+' ETH'; sp.querySelector('b').textContent=k; pp.appendChild(sp); });
+  if(d.vibevibe){ var vs=document.createElement('span'); vs.innerHTML='1 <b>VIBEVIBE</b> = '+d.vibevibe.priceEth.toPrecision(3)+' ETH'+(d.vibevibe.priceUsd!=null?' ('+fmtUsd(d.vibevibe.priceUsd)+')':''); pp.appendChild(vs); }
   var t0=(d.top||[])[0];
   if(t0){ $('vs-active').innerHTML=''; var a=document.createElement('a'); a.href='https://testnet.vibevibe.fun/token/'+t0.token; a.target='_blank'; a.rel='noopener noreferrer'; a.style.textDecoration='none';
     a.textContent='$'+(t0.name||shortW(t0.token)); var sm=document.createElement('small'); sm.textContent=' '+fmtEth(t0.volumeEth)+' ETH'; $('vs-active').appendChild(a); $('vs-active').appendChild(sm); }
   else $('vs-active').textContent='…';
   $('vs-total').textContent=d.totalTokens!=null?fmtInt(d.totalTokens):'…';
-  $('vs-note').textContent='Across the '+d.sampleTokens+' most active tokens. Live from vibe/vibe public data, updated '+agoText(d.asOf)+'.';
+  $('vs-note').textContent='Across the '+d.sampleTokens+' most active tokens of '+(d.pairsCovered||1)+' pairs, all converted to ETH. Live from vibe/vibe public data, updated '+agoText(d.asOf)+'.';
   var w=d.wallToken;
   if(w&&w.holders!=null){ $('vs-holders').textContent=fmtInt(w.holders); $('vs-wtrades').textContent=fmtInt(w.trades24h); $('vs-token').hidden=false; }
   var ol=$('vs-top'); ol.innerHTML='';
   (d.top||[]).forEach(function(t,i){ var li=document.createElement('li'), a=document.createElement('a');
     a.href='https://testnet.vibevibe.fun/token/'+t.token; a.target='_blank'; a.rel='noopener noreferrer';
     a.innerHTML='<span class="rk">#'+(i+1)+'</span><span class="nm"></span><span class="tr"></span><span class="vl"></span>';
-    a.querySelector('.nm').textContent='$'+(t.name||shortW(t.token)); a.querySelector('.tr').textContent=fmtInt(t.trades24h)+' trades'; a.querySelector('.vl').textContent=fmtEth(t.volumeEth)+' ETH';
+    a.querySelector('.nm').textContent='$'+(t.name||shortW(t.token)); a.querySelector('.tr').textContent=fmtInt(t.trades24h)+' trades'+(t.pair&&t.pair!=='ETH'?'  '+t.pair:''); a.querySelector('.vl').textContent=fmtEth(t.volumeEth)+' ETH';
     li.appendChild(a); ol.appendChild(li); });
   $('statsbtn').hidden=false;
 }
+function fmtUsd(n){ if(n==null) return ''; if(n>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; if(n>=1e4) return '$'+Math.round(n/1e3)+'K'; if(n>=1e3) return '$'+(n/1e3).toFixed(1)+'K'; return '$'+Math.round(n); }
+function shortAgo(iso){ var m=Math.max(0,Math.round((Date.now()-Date.parse(iso))/60000)); return m<60?m+'m ago':Math.round(m/60)+'h ago'; }
+function squarify(vals,W,H){            // vals sorted desc; returns rects in px
+  var total=vals.reduce(function(a,b){return a+b;},0)||1, scale=W*H/total, areas=vals.map(function(v){return v*scale;});
+  var rects=[], x=0, y=0, w=W, h=H, i=0;
+  function worst(row,side){ var s=0,mx=0,mn=Infinity; row.forEach(function(r){ s+=r; if(r>mx) mx=r; if(r<mn) mn=r; }); return Math.max(side*side*mx/(s*s),(s*s)/(side*side*mn)); }
+  while(i<areas.length){
+    var side=Math.min(w,h), row=[areas[i]], j=i+1;
+    while(j<areas.length&&worst(row.concat(areas[j]),side)<=worst(row,side)){ row.push(areas[j]); j++; }
+    var s=row.reduce(function(a,b){return a+b;},0);
+    if(w>=h){ var cw=s/h, cy=y; row.forEach(function(a){ var rh=a/cw; rects.push({x:x,y:cy,w:cw,h:rh}); cy+=rh; }); x+=cw; w-=cw; }
+    else { var ch=s/w, cx=x; row.forEach(function(a){ var rw=a/ch; rects.push({x:cx,y:y,w:rw,h:ch}); cx+=rw; }); y+=ch; h-=ch; }
+    i=j;
+  }
+  return rects;
+}
+function heatColor(bps){
+  if(bps==null) return '#2a2d31';
+  var p=Math.max(-1,Math.min(1,bps/3000)), k=0.25+0.75*Math.abs(p);
+  return p>=0?'rgba(34,224,122,'+k.toFixed(2)+')':'rgba(255,77,94,'+k.toFixed(2)+')';
+}
+function renderHeat(){
+  var box=$('heat'); if(!box||!vstats) return; box.innerHTML='';
+  var items=(vstats.heatmap||[]).filter(function(t){return t.volumeEth>0;});
+  if(!items.length){ box.innerHTML='<p class="vs-note" style="padding:16px">No data yet.</p>'; return; }
+  var W=box.clientWidth||700, H=box.clientHeight||380, rects=squarify(items.map(function(t){return t.volumeEth;}),W,H);
+  items.forEach(function(t,i){ var r=rects[i]; if(!r) return;
+    var a=document.createElement('a'); a.href='https://testnet.vibevibe.fun/token/'+t.token; a.target='_blank'; a.rel='noopener noreferrer';
+    a.style.left=r.x+'px'; a.style.top=r.y+'px'; a.style.width=r.w+'px'; a.style.height=r.h+'px'; a.style.background=heatColor(t.change24hBps);
+    var nm='$'+(t.name||shortW(t.token)), chg=t.change24hBps==null?'':((t.change24hBps>=0?'+':'')+(t.change24hBps/100).toFixed(1)+'%');
+    a.title=nm+'  '+fmtEth(t.volumeEth)+' ETH  '+(chg||'no price change data');
+    var big=Math.min(r.w,r.h);
+    if(big>34){ var n=document.createElement('span'); n.className='hn'; n.textContent=nm; n.style.fontSize=Math.max(10,Math.min(20,big/4))+'px'; a.appendChild(n);
+      if(big>52){ var c=document.createElement('span'); c.className='hc'; c.textContent=(chg?chg+'  ':'')+fmtEth(t.volumeEth)+' ETH'; a.appendChild(c); } }
+    box.appendChild(a); });
+}
+function renderWhales(){
+  var ol=$('whales'); if(!ol||!vstats) return; ol.innerHTML='';
+  var ws=vstats.whales||[];
+  if(!ws.length){ ol.innerHTML='<li><span class="vs-note" style="display:block;padding:14px">No big trades found in the last 24 hours.</span></li>'; return; }
+  ws.forEach(function(w){ var li=document.createElement('li'), a=document.createElement('a');
+    a.href='https://testnet.vibevibe.fun/token/'+w.token; a.target='_blank'; a.rel='noopener noreferrer';
+    a.innerHTML='<span class="sd '+(w.side==='SELL'?'sell':'buy')+'">'+(w.side==='SELL'?'SELL':'BUY')+'</span><span class="wt"></span><span class="wv"></span><span class="wm"></span>';
+    a.querySelector('.wt').textContent='$'+(w.name||shortW(w.token));
+    a.querySelector('.wv').innerHTML=fmtEth(w.eth)+' ETH'+(w.usd!=null?'<small>'+fmtUsd(w.usd)+'</small>':'');
+    a.querySelector('.wm').textContent=(w.actor?shortW(w.actor)+'  ':'')+shortAgo(w.at);
+    li.appendChild(a); ol.appendChild(li); });
+}
+[].forEach.call(document.querySelectorAll('.vs-tabs button'),function(b){ b.addEventListener('click',function(){
+  [].forEach.call(document.querySelectorAll('.vs-tabs button'),function(x){ x.setAttribute('aria-selected',String(x===b)); });
+  ['ov','hm','wh'].forEach(function(k){ $('pane-'+k).hidden=(k!==b.dataset.pane); });
+  if(b.dataset.pane==='hm') renderHeat(); if(b.dataset.pane==='wh') renderWhales();
+}); });
+window.addEventListener('resize',function(){ if($('dlg-stats').open&&!$('pane-hm').hidden) renderHeat(); });
 function openStats(){ if(!vstats) return; renderVstats(); var d=$('dlg-stats'); if(!d.open) d.showModal(); }
 $('statsbtn').addEventListener('click',openStats);
 $('stats-close').addEventListener('click',function(){ $('dlg-stats').close(); });
@@ -1046,7 +1145,7 @@ function loadVstats(){
     if(!api||!api.runBoard){ renderRunTicker([]); }
   }).catch(function(){ /* stats are optional: the panel stays hidden */ });
 }
-setInterval(function(){ if(vstats) $('vs-note').textContent='Across the '+vstats.sampleTokens+' most active tokens. Live from vibe/vibe public data, updated '+agoText(vstats.asOf)+'.'; },30000);
+setInterval(function(){ if(vstats) $('vs-note').textContent='Across the '+vstats.sampleTokens+' most active tokens of '+(vstats.pairsCovered||1)+' pairs, all converted to ETH. Live from vibe/vibe public data, updated '+agoText(vstats.asOf)+'.'; },30000);
 
 /* links from the game: #cell-1234 opens a cell, #leave=SCORE&w=WALLET opens a prefilled form */
 function handleHash(){
