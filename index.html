@@ -369,8 +369,8 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
 </main>
 
 <div class="ticker ticker2" id="ticker2" hidden>
-  <div class="tk-label" aria-hidden="true"><span class="tk-dot"></span><span class="tk-long">VIBE RUN top 10</span><span class="tk-short">Top runners</span></div>
-  <section class="tk-view" id="tk2-view" aria-label="VIBE RUN top runners"><div class="tk-track" id="tk2-track"></div></section>
+  <div class="tk-label" aria-hidden="true"><span class="tk-dot"></span><span class="tk-long">Live feed</span><span class="tk-short">Live</span></div>
+  <section class="tk-view" id="tk2-view" aria-label="Live feed: vibe/vibe stats, whale trades and VIBE RUN top runners"><div class="tk-track" id="tk2-track"></div></section>
 </div>
 <dialog id="dlg-stats" class="stats-dlg" aria-labelledby="vs-h">
   <div class="gbar"><b>📊 Live stats</b><button class="x" type="button" id="stats-close" aria-label="Close live stats">✕</button></div>
@@ -1032,8 +1032,8 @@ function renderRunTicker(top){
     var b=document.createElement('button'); b.type='button'; b.className='tk-item';
     if(clone){ b.tabIndex=-1; b.setAttribute('aria-hidden','true'); }
     if(r.stat){ b.innerHTML='<span class="tk-no">'+r.icon+'</span><strong></strong><span class="tk-tx"></span>'; b.querySelector('strong').textContent=r.title; b.querySelector('.tk-tx').textContent=r.text; b.dataset.href=r.href; if(!clone) b.setAttribute('aria-label',r.title+' '+r.text+'. Opens live stats'); return b; }
-    if(!r.rank){ b.innerHTML='<strong>No runners yet.</strong><span class="tk-tx">Be the first on the VIBE RUN leaderboard.</span>'; }
-    else { var cls=r.rank===1?'g':r.rank===2?'s':r.rank===3?'b':''; b.innerHTML='<span class="rk '+cls+'">#'+r.rank+'</span><span class="tk-no">'+String(r.score).padStart(5,'0')+'</span><span class="tk-tx"></span>';
+    if(!r.rank){ b.innerHTML='<span class="tk-no">🏃</span><strong>VIBE RUN</strong><span class="tk-tx">No runners yet. Be the first on the leaderboard.</span>'; }
+    else { var cls=r.rank===1?'g':r.rank===2?'s':r.rank===3?'b':''; b.innerHTML='<span class="tk-no">🏃</span><strong>VIBE RUN</strong><span class="rk '+cls+'">#'+r.rank+'</span><span class="tk-no">'+String(r.score).padStart(5,'0')+'</span><span class="tk-tx"></span>';
       b.querySelector('.tk-tx').textContent=shortW(r.wallet)+(r.reached_moon?' 🚀':''); if(!clone) b.setAttribute('aria-label','Rank '+r.rank+', '+r.score+' points. Play VIBE RUN'); }
     return b;
   }
