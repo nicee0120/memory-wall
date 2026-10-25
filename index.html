@@ -48,6 +48,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .btn.small{min-height:36px;padding:6px 14px;font-size:14px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn[hidden]{display:none}
+.top .btn{white-space:nowrap}
 
 /* banners */
 .banner{border:1px solid var(--line-2);background:var(--panel);border-radius:var(--radius);padding:14px 16px;margin:16px 0;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
@@ -161,6 +162,35 @@ textarea.in{min-height:110px;resize:vertical}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#000;border:1px solid var(--lime);color:var(--text);padding:12px 18px;border-radius:999px;z-index:40;max-width:calc(100vw - 32px)}
 .toast[hidden]{display:none}
+/* VIBE RUN integration */
+.btn.play{border-color:var(--lime);color:var(--lime);background:transparent}
+.btn.play:hover{background:var(--lime-dim)}
+.btn[hidden]{display:none}
+@media (max-width:520px){.btn.play .pl-long{display:none}}
+.cta-short{display:none}
+@media (max-width:520px){.cta-long{display:none}.cta-short{display:inline}.top .btn{padding:8px 12px;font-size:14px;min-height:40px}.top .wrap{gap:8px;padding:0 12px}.brand svg{width:30px;height:30px}}
+@media (max-width:430px){.btn.play .pl-short{display:none}.btn.play{padding:8px 11px}}
+@media (max-width:360px){.word{display:none}}
+@media (min-width:521px){.btn.play .pl-short{display:none}}
+dialog.game{width:min(1200px,96vw);height:min(780px,94dvh);max-height:94dvh;padding:0;overflow:hidden;background:#000}
+dialog.game .gbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line)}
+dialog.game .gbar b{font-size:15px;letter-spacing:.04em}
+dialog.game iframe{display:block;width:100%;height:calc(100% - 57px);border:0;background:#000}
+@media (max-width:640px){dialog.game{width:100vw;height:100dvh;max-width:100vw;max-height:100dvh;border-radius:0;margin:0}}
+.ticker2{position:fixed;left:0;right:0;bottom:0;z-index:19;display:flex;height:36px;background:#000;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box}
+.ticker2[hidden]{display:none}
+.ticker2 .tk-label{background:#fff}
+body.has-t2{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+body.has-t2 .toast{bottom:calc(56px + env(safe-area-inset-bottom,0px))}
+.tk-item .rk{color:#fff;font-weight:800}
+.tk-item .rk.g{color:#FFD24A}.tk-item .rk.s{color:#E5E7EB}.tk-item .rk.b{color:#E0A16B}
+.cell.crown1,.cell.crown2,.cell.crown3{z-index:2}
+.cell.crown1{border-color:#FFD24A!important;box-shadow:0 0 0 2px #FFD24A,0 0 14px rgba(255,210,74,.6)}
+.cell.crown2{border-color:#E5E7EB!important;box-shadow:0 0 0 2px #E5E7EB,0 0 12px rgba(229,231,235,.5)}
+.cell.crown3{border-color:#E0A16B!important;box-shadow:0 0 0 2px #E0A16B,0 0 12px rgba(224,161,107,.5)}
+.runbadge{display:inline-flex;align-items:center;gap:8px;margin-top:12px;border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;background:var(--bg);color:var(--text)}
+.runbadge b{color:var(--lime);font-variant-numeric:tabular-nums}
+.runbadge:hover{border-color:var(--lime)}
 
 /* live ticker */
 .ticker{display:flex;align-items:stretch;height:36px;border-top:1px solid var(--line);background:#000;overflow:hidden}
@@ -187,6 +217,18 @@ textarea.in{min-height:110px;resize:vertical}
 @media (max-width:520px){.tk-label .tk-long{display:none}.tk-label .tk-short{display:inline}.tk-label{padding:0 20px 0 12px}.tk-item{font-size:13px}}
 @media (prefers-reduced-motion: reduce){.tk-view{overflow-x:auto;-webkit-mask-image:none;mask-image:none}.tk-dot{animation:none}}
 footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;gap:26px;padding-top:28px}
+  .overview{max-width:420px}
+  .brand .tag{display:none}
+}
+@media (max-width:520px){
+  .top .wrap{gap:10px}
+  .top .btn.primary{padding:8px 14px;font-size:14px}
+  .word{font-size:18px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(19px,1fr));gap:2px}
+  .stats{gap:18px}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -202,7 +244,8 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
       <span class="tag">Memory Wall</span>
     </a>
     <span class="spacer"></span>
-    <button class="btn primary" id="cta" type="button">Leave your memory</button>
+    <button class="btn play" id="play" type="button" aria-label="Play VIBE RUN" hidden><span aria-hidden="true">🎮</span> <span class="pl-long">Play VIBE RUN</span><span class="pl-short">Play</span></button>
+    <button class="btn primary" id="cta" type="button"><span class="cta-long">Leave your memory</span><span class="cta-short">+ Memory</span></button>
   </div>
   <div class="ticker" id="ticker" hidden>
     <div class="tk-label" aria-hidden="true"><span class="tk-dot"></span><span class="tk-long">Latest memories</span><span class="tk-short">Live</span></div>
@@ -264,6 +307,14 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
     <p class="credit">Built by <a href="https://x.com/nice012023" target="_blank" rel="noopener noreferrer">@nice012023</a> <span aria-hidden="true" style="color:var(--line-2);margin:0 8px">|</span> <a href="https://testnet.vibevibe.fun/" target="_blank" rel="noopener noreferrer">Join the VibeVibe testnet</a></p></footer>
 </main>
 
+<div class="ticker ticker2" id="ticker2" hidden>
+  <div class="tk-label" aria-hidden="true"><span class="tk-dot"></span><span class="tk-long">VIBE RUN top 10</span><span class="tk-short">Top runners</span></div>
+  <section class="tk-view" id="tk2-view" aria-label="VIBE RUN top runners"><div class="tk-track" id="tk2-track"></div></section>
+</div>
+<dialog id="dlg-game" class="game" aria-label="VIBE RUN">
+  <div class="gbar"><b>🎮 VIBE RUN</b><button class="x" type="button" id="game-close" aria-label="Close the game">✕</button></div>
+  <iframe id="game-frame" title="VIBE RUN game" allow="autoplay; fullscreen"></iframe>
+</dialog>
 <div class="tip" id="tip" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -336,6 +387,8 @@ function SupabaseBackend(url,key){
     latest:function(n){ return sb.from('memories').select('cell_id,display_name,message,created_at').order('created_at',{ascending:false}).limit(n).then(unwrap); },
     url:function(path){ return path?sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl:''; },
     getReactions:function(cell){ return sb.rpc('get_reactions',{p_cell:cell,p_visitor:visitorId()}).then(unwrap); },
+    runBoard:function(n,wallet){ return sb.rpc('get_run_leaderboard',{p_limit:n,p_wallet:wallet||null}).then(unwrap); },
+    cellsForWallets:function(ws){ if(!ws.length) return Promise.resolve([]); return sb.from('memories').select('cell_id,wallet').in('wallet',ws).then(unwrap); },
     toggleReaction:function(cell,emoji){ return sb.rpc('toggle_reaction',{p_cell:cell,p_emoji:emoji,p_visitor:visitorId()}).then(unwrap); },
     subscribe:function(onChange){
       try{ chan=sb.channel('memory-wall').on('broadcast',{event:'claimed'},function(){ onChange(); }).subscribe(); }catch(e){ chan=null; }
@@ -406,7 +459,7 @@ function toast(t){ var el=$('toast'); el.textContent=t; el.hidden=false; clearTi
 var tip=$('tip');
 function showTip(btn){
   var n=+btn.dataset.id, w=wall.get(n), r=btn.getBoundingClientRect();
-  tip.innerHTML='<b>#'+pad(n)+'</b> '+(w?(w.hidden?'Hidden':'Taken'):'Free');
+  tip.innerHTML='<b>#'+pad(n)+'</b> '+(w?(w.hidden?'Hidden':'Taken'):'Free')+(crowns[n]?' · 🏆 VIBE RUN #'+crowns[n]:'');
   tip.style.left=(r.left+r.width/2)+'px'; tip.style.top=r.top+'px'; tip.hidden=false;
 }
 
@@ -440,6 +493,7 @@ function renderMini(){
     g.fillStyle=w?(w.hidden?"#4A4F54":"#DFF902"):"#272B2F";
     g.fillRect((i%100)*s,Math.floor(i/100)*s,s-1,s-1);
   }
+  Object.keys(crowns).forEach(function(c){ var k=c-1; g.fillStyle=['','#FFD24A','#E5E7EB','#E0A16B'][crowns[c]]; g.fillRect((k%100)*s-1,Math.floor(k/100)*s-1,s+1,s+1); });
   g.strokeStyle='#FFFFFF'; g.lineWidth=1.5; g.strokeRect(0.75,page*30+0.75,298.5,28.5);
   if(selected){ var k=selected-1; g.strokeStyle='#FFFFFF'; g.lineWidth=1; g.strokeRect((k%100)*s-1.5,Math.floor(k/100)*s-1.5,s+2,s+2); }
 }
@@ -467,6 +521,7 @@ var io=('IntersectionObserver' in window)?new IntersectionObserver(function(entr
 function cellClass(n){
   var w=wall.get(n),c='cell';
   if(w){ c+=w.hidden?' occ hid':' occ'; if(w.thumb&&!w.hidden) c+=' img'; }
+  if(crowns[n]) c+=' crown'+crowns[n];
   if(n===selected) c+=' sel';
   if((filter==='empty'&&w)||(filter==='occ'&&!w)) c+=' dim';
   return c;
@@ -534,7 +589,8 @@ function loadWall(quiet){
     wall=m; loaded=true;
     $('grid-loading').hidden=true;
     renderStats(); renderMini(); renderPages(); renderGrid();
-    loadTicker();
+    loadTicker(); loadRun();
+    if(!window.__hashDone){ window.__hashDone=true; handleHash(); }
     if(api.live) banner('',null);
   }).catch(function(err){
     if(!quiet||!loaded){
@@ -657,6 +713,13 @@ function showView(n,m,state){
     body.querySelector('.msg').textContent=m.message; body.querySelector('.nm').textContent=m.display_name;
     $('rep-open').onclick=function(){ reportForm(n); };
     loadReactions(n);
+    if(m.wallet&&api.runBoard) api.runBoard(1,m.wallet).then(function(d){
+      if(!d||!d.me||!$('v-body')||$('v-no').textContent!=='#'+pad(n)) return;
+      var b=document.createElement('button'); b.type='button'; b.className='runbadge';
+      b.innerHTML='🏃 VIBE RUN best <b>'+String(d.me.score).padStart(5,'0')+'</b> · #'+d.me.rank;
+      b.title='Play VIBE RUN'; b.onclick=function(){ $('dlg-view').close(); openGame(); };
+      var anchor=$('reacts'); if(anchor) anchor.parentNode.insertBefore(b,anchor);
+    }).catch(function(){});
   }
   var dv=$('dlg-view'); if(!dv.open) dv.showModal();
 }
@@ -836,6 +899,86 @@ function cta(){
 $('cta').addEventListener('click',cta); $('cta2').addEventListener('click',cta);
 
 /* =================== start =================== */
+/* =================== VIBE RUN integration =================== */
+var VIBE_RUN_URL='https://vibe-run-five.vercel.app/';   // the game's address
+var crowns={}, run2={sig:null};
+function openGame(){
+  if(!VIBE_RUN_URL) return;
+  var f=$('game-frame'); if(!f.getAttribute('src')) f.setAttribute('src',VIBE_RUN_URL);
+  var d=$('dlg-game'); if(!d.open) d.showModal(); setTimeout(function(){ try{ f.focus(); }catch(e){} },150);
+}
+$('play').addEventListener('click',openGame);
+$('game-close').addEventListener('click',function(){ $('dlg-game').close(); });
+$('dlg-game').addEventListener('close',function(){ try{ $('game-frame').contentWindow.postMessage({type:'viberun:pause'},'*'); }catch(e){} });
+if(VIBE_RUN_URL) $('play').hidden=false;
+function shortW(w){ return w.slice(0,6)+'…'+w.slice(-4); }
+function loadRun(){
+  if(!api||!api.runBoard) return;
+  api.runBoard(10).then(function(d){
+    var top=(d&&d.top)||[];
+    // bottom ticker
+    var sig=top.map(function(r){return r.wallet+':'+r.score;}).join('|');
+    if(sig!==run2.sig){ run2.sig=sig; renderRunTicker(top); }
+    // crowns for the top 3 runners who also have a memory on the wall
+    var ws=top.slice(0,3).map(function(r){return r.wallet;});
+    return api.cellsForWallets(ws).then(function(rows){
+      var c={}; (rows||[]).forEach(function(r){ var i=ws.indexOf(r.wallet); if(i>=0&&!c[r.cell_id]) c[r.cell_id]=i+1; });
+      var changed=JSON.stringify(c)!==JSON.stringify(crowns); crowns=c;
+      if(changed){ [].forEach.call($('grid').children,function(el){ el.className=cellClass(+el.dataset.id); }); renderMini(); }
+    });
+  }).catch(function(err){ console.warn('VIBE RUN data unavailable',err); });
+}
+function renderRunTicker(top){
+  var bar=$('ticker2'), tr=$('tk2-track'), view=$('tk2-view');
+  if(!top.length&&!VIBE_RUN_URL){ bar.hidden=true; document.body.classList.remove('has-t2'); return; }
+  bar.hidden=false; document.body.classList.add('has-t2');
+  tr.classList.remove('run'); tr.innerHTML='';
+  var items=top.length?top:[{rank:0}];
+  function item(r,clone){
+    var b=document.createElement('button'); b.type='button'; b.className='tk-item';
+    if(clone){ b.tabIndex=-1; b.setAttribute('aria-hidden','true'); }
+    if(!r.rank){ b.innerHTML='<strong>No runners yet.</strong><span class="tk-tx">Be the first on the VIBE RUN leaderboard.</span>'; }
+    else { var cls=r.rank===1?'g':r.rank===2?'s':r.rank===3?'b':''; b.innerHTML='<span class="rk '+cls+'">#'+r.rank+'</span><span class="tk-no">'+String(r.score).padStart(5,'0')+'</span><span class="tk-tx"></span>';
+      b.querySelector('.tk-tx').textContent=shortW(r.wallet)+(r.reached_moon?' 🚀':''); if(!clone) b.setAttribute('aria-label','Rank '+r.rank+', '+r.score+' points. Play VIBE RUN'); }
+    return b;
+  }
+  var g1=document.createElement('div'); g1.className='tk-group'; items.forEach(function(r){ g1.appendChild(item(r,false)); }); tr.appendChild(g1);
+  if(rmq.matches) return;
+  var guard=0; while(g1.scrollWidth<view.clientWidth&&guard++<20) items.forEach(function(r){ g1.appendChild(item(r,true)); });
+  var g2=g1.cloneNode(true); g2.setAttribute('aria-hidden','true'); [].forEach.call(g2.querySelectorAll('button'),function(x){ x.tabIndex=-1; x.setAttribute('aria-hidden','true'); x.removeAttribute('aria-label'); });
+  tr.appendChild(g2);
+  var w=g1.scrollWidth; tr.style.setProperty('--tk-dist',w+'px'); tr.style.setProperty('--tk-dur',Math.max(18,w/55).toFixed(1)+'s');
+  void tr.offsetWidth; tr.classList.add('run');
+}
+$('tk2-track').addEventListener('click',function(e){ if(e.target.closest('.tk-item')) openGame(); });
+
+/* links from the game: #cell-1234 opens a cell, #leave=SCORE&w=WALLET opens a prefilled form */
+function handleHash(){
+  var h=location.hash;
+  var m=/^#cell-(\d{1,5})$/.exec(h);
+  if(m){ var n=+m[1]; if(n>=1&&n<=TOTAL){ goToCell(n,true); openCell(n); } return true; }
+  m=/^#leave=(\d{1,8})(?:&w=(0x[0-9a-fA-F]{40}))?$/.exec(h);
+  if(m){ leaveWithScore(+m[1],m[2]||''); return true; }
+  return false;
+}
+function leaveWithScore(score,wallet){
+  if(!api||!loaded) return;
+  var n=firstFree(page*PAGE+1); if(!n){ toast('All 10,000 cells are taken.'); return; }
+  goToCell(n,true); openForm(n);
+  $('f-msg').value='I scored '+String(score).padStart(5,'0')+' in VIBE RUN 🚀';
+  if(wallet&&/^0x[0-9a-fA-F]{40}$/.test(wallet)) $('f-wallet').value=wallet;
+  updatePreview();
+}
+window.addEventListener('hashchange',function(){ if(loaded) handleHash(); });
+window.addEventListener('message',function(e){
+  if(!VIBE_RUN_URL) return;
+  var origin; try{ origin=new URL(VIBE_RUN_URL).origin; }catch(x){ return; }
+  if(e.origin!==origin||!e.data||e.data.type!=='viberun:leave') return;
+  var sc=parseInt(e.data.score,10); if(!(sc>0)) return;
+  $('dlg-game').close();
+  leaveWithScore(sc,String(e.data.wallet||''));
+});
+
 function start(backend){
   api=backend; $('grid-loading').hidden=false; $('grid-loading').textContent='Loading the wall…';
   $('ticker').hidden=false;
