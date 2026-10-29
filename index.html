@@ -81,7 +81,11 @@ h2{font-family:Bungee,Impact,sans-serif;font-weight:400;font-size:clamp(28px,4.4
 .steps b{display:block;font-family:"Permanent Marker",sans-serif;font-weight:400;font-size:22px;color:var(--gold);margin:6px 0 2px}
 .steps span{color:#D9D0BA}
 .teaser{max-width:960px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid var(--line);background:#000}
-.teaser video{display:block;width:100%;height:auto}
+.teaser{position:relative;aspect-ratio:16/9}
+.teaser video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.teaser .miss{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted);background:#000}
+.teaser .miss[hidden]{display:none}
+.teaser .miss b{display:block;font-family:Bungee,Impact,sans-serif;font-weight:400;color:var(--gold);font-size:20px;margin-bottom:6px}
 footer{margin-top:50px;padding:24px 0 34px;border-top:1px solid rgba(255,200,61,.16);text-align:center;color:var(--muted)}
 footer a{color:var(--gold)}
 .fs-on .screen{max-width:none}
@@ -133,7 +137,8 @@ footer a{color:var(--gold)}
   <section id="teaser" aria-labelledby="h-teaser"><div class="wrap">
     <h2 id="h-teaser">The teaser</h2>
     <p class="sub">22 seconds of what's waiting on the streets.</p>
-    <div class="teaser"><video controls playsinline preload="none" poster="vibe-gang-poster.png"><source src="vibe-gang-teaser.mp4" type="video/mp4">Your browser can't play this video.</video></div>
+    <div class="teaser"><video id="tv" controls playsinline preload="metadata" poster="vibe-gang-poster.png"><source src="vibe-gang-teaser.mp4" type="video/mp4">Your browser can't play this video.</video>
+      <div class="miss" id="tv-miss" hidden><div><b>Teaser coming soon</b>The video file isn't on the site yet.</div></div></div>
   </div></section>
 </main>
 <footer>
@@ -149,6 +154,10 @@ footer a{color:var(--gold)}
     setTimeout(function(){ try{ frame.focus(); frame.contentWindow.focus(); }catch(e){} },200);
   });
   document.addEventListener('fullscreenchange',function(){ fs.textContent=inFs()?'✕ Exit fullscreen':'⛶ Fullscreen'; if(!inFs()){ try{ frame.contentWindow.postMessage({type:'vibegang:pause'},'*'); }catch(e){} } });
+  // if the teaser file is missing, say so instead of showing a dead player
+  var tv=document.getElementById('tv'), src=tv.querySelector('source');
+  src.addEventListener('error',function(){ document.getElementById('tv-miss').hidden=false; });
+  fetch('vibe-gang-teaser.mp4',{method:'HEAD'}).then(function(r){ if(!r.ok) document.getElementById('tv-miss').hidden=false; }).catch(function(){});
   // keep the page from scrolling when the arrow keys or space steer the game
   frame.addEventListener('load',function(){ try{ frame.contentWindow.addEventListener('keydown',function(e){ if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.code)>=0) e.preventDefault(); }); }catch(e){} });
 })();
