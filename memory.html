@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VibeVibe Memory Wall</title>
 <meta name="description" content="10,000 cells. One shared memory wall for the VibeVibe testnet community.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' rx='6' fill='%23DFF902'/%3E%3Cpath d='M4.5 7.5 L7 12 L9.5 7.5 M14.5 6.5 L11.8 12.5 M16.5 7.5 L19 12 L21.5 7.5 M7 17 Q13 21.5 19 17' fill='none' stroke='%230B0C0D' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect width='26' height='26' rx='6' fill='%23FF8A2A'/%3E%3Cpath d='M4.5 7.5 L7 12 L9.5 7.5 M14.5 6.5 L11.8 12.5 M16.5 7.5 L19 12 L21.5 7.5 M7 17 Q13 21.5 19 17' fill='none' stroke='%230B0C0D' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap" rel="stylesheet">
@@ -52,7 +52,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 /* banners */
 .banner{border:1px solid var(--line-2);background:var(--panel);border-radius:var(--radius);padding:14px 16px;margin:16px 0;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
-.banner.warn{border-color:rgba(223,249,2,.5)}
+.banner.warn{border-color:rgba(255,138,42,.5)}
 .banner.err{border-color:rgba(255,107,91,.6)}
 .banner p{margin:0;flex:1;min-width:240px}
 .banner b{color:var(--text)}
@@ -103,13 +103,13 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .cell{aspect-ratio:1;border:1px solid #1E2124;background:#111315;border-radius:4px;padding:0;cursor:pointer;position:relative;background-size:cover;background-position:center}
 .cell:hover{border-color:var(--lime)}
 .cell:focus-visible{outline:2px solid var(--lime);outline-offset:1px;z-index:2}
-.cell.occ{background-color:var(--lime-dim);border-color:rgba(223,249,2,.35)}
+.cell.occ{background-color:var(--lime-dim);border-color:rgba(255,138,42,.35)}
 .cell.occ::after{content:"";position:absolute;left:50%;top:50%;width:28%;height:28%;margin:-14% 0 0 -14%;background:var(--lime);border-radius:2px}
 .cell.occ.img::after{display:none}
-.cell.occ.img{border-color:rgba(223,249,2,.55)}
+.cell.occ.img{border-color:rgba(255,138,42,.55)}
 .cell.hid{background:#202326;border-color:#2B2F33}
 .cell.hid::after{content:"";position:absolute;inset:30%;border-top:2px solid #50565C;transform:rotate(-45deg);transform-origin:center}
-.cell.sel{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime),0 0 14px rgba(223,249,2,.45);z-index:3}
+.cell.sel{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime),0 0 14px rgba(255,138,42,.45);z-index:3}
 .cell.dim{opacity:.18}
 .tip{position:fixed;z-index:30;pointer-events:none;background:#000;border:1px solid var(--line-2);border-radius:8px;padding:5px 9px;font-size:13px;white-space:nowrap;transform:translate(-50%,calc(-100% - 10px))}
 .tip[hidden]{display:none}
@@ -152,7 +152,7 @@ textarea.in{min-height:110px;resize:vertical}
 .drop:hover{border-color:var(--lime)}
 .drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .preview{display:flex;gap:14px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:14px}
-.preview .pc{width:56px;height:56px;border-radius:8px;flex:none;background:var(--lime-dim) center/cover no-repeat;border:1px solid rgba(223,249,2,.55)}
+.preview .pc{width:56px;height:56px;border-radius:8px;flex:none;background:var(--lime-dim) center/cover no-repeat;border:1px solid rgba(255,138,42,.55)}
 .preview .pt{min-width:0;flex:1}
 .preview .pm{white-space:pre-wrap;word-break:break-word;margin:0 0 4px}
 .preview .pn{color:var(--muted);font-size:14px}
@@ -166,6 +166,7 @@ textarea.in{min-height:110px;resize:vertical}
 .btn.play{border-color:var(--lime);color:var(--lime);background:transparent}
 .btn.gangbtn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border-color:#FFC83D;color:#FFC83D}
 .btn.gangbtn:hover{background:rgba(255,200,61,.14)}
+.btn.heroesbtn{border-color:#40e8ff;color:#40e8ff}.btn.heroesbtn:hover{background:rgba(64,232,255,.12)}
 .btn.play:hover{background:var(--lime-dim)}
 .btn[hidden]{display:none}
 @media (max-width:520px){.btn.play .pl-long{display:none}}
@@ -292,21 +293,54 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
   .stats{gap:18px}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- Halloween theme ---------- */
+body.halloween{--lime:#FF8A2A;--lime-dim:rgba(255,138,42,.16);--panel:rgba(20,12,32,.97);--panel-2:rgba(32,20,48,.98);--line:#2e2240;--line-2:#3e2e56;background:#0b0716}
+#hw{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 78% 12%,#3a1f5a 0%,#1a0e30 38%,#0b0716 78%)}
+body.halloween>*:not(#hw){position:relative;z-index:1}
+body.halloween header.top{position:sticky;z-index:20;background:rgba(14,8,24,.9)!important;border-bottom-color:#3e2e56}
+.hw-moon{position:absolute;right:8%;top:12%;width:min(20vw,210px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 36%,#fffbe8,#f5e7b0 55%,#e8c97a);box-shadow:0 0 60px 20px rgba(255,220,140,.3),0 0 160px 60px rgba(255,140,60,.16)}
+.hw-moon::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 62% 60%,rgba(190,150,90,.35) 0 8%,transparent 9%),radial-gradient(circle at 34% 66%,rgba(190,150,90,.3) 0 6%,transparent 7%),radial-gradient(circle at 55% 30%,rgba(190,150,90,.25) 0 5%,transparent 6%)}
+.hw-stars{position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 10% 20%,#fff,transparent),radial-gradient(1px 1px at 25% 8%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 30%,#ffe,transparent),radial-gradient(1px 1px at 55% 12%,#fff,transparent),radial-gradient(1px 1px at 18% 42%,#fff,transparent),radial-gradient(1px 1px at 66% 44%,#fff,transparent);opacity:.75;animation:hwTw 4s ease-in-out infinite alternate}
+@keyframes hwTw{to{opacity:.35}}
+.hw-hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:40vh}
+.hw-win rect{animation:hwFl 3s infinite}.hw-win rect:nth-child(2){animation-delay:.7s}.hw-win rect:nth-child(3){animation-delay:1.6s}
+@keyframes hwFl{0%,100%{opacity:1}48%{opacity:.3}50%{opacity:1}72%{opacity:.75}}
+.hw-pumpkins{position:absolute;left:0;right:0;bottom:1.5vh}.pk{position:absolute;bottom:0;filter:drop-shadow(0 0 18px rgba(255,120,30,.55))}
+.pk.p1{left:3%;width:min(10vw,110px)}.pk.p2{left:11%;width:min(6vw,70px)}.pk.p3{right:4%;width:min(9vw,100px)}
+.pkf{fill:#ffe27a;animation:hwGlow 1.6s ease-in-out infinite alternate}@keyframes hwGlow{to{fill:#ffb030}}
+.hw-fog{position:absolute;left:-50%;width:200%;height:28vh;bottom:-6vh;background:radial-gradient(ellipse at 20% 60%,rgba(190,170,255,.16),transparent 60%),radial-gradient(ellipse at 60% 50%,rgba(190,170,255,.12),transparent 55%),radial-gradient(ellipse at 85% 70%,rgba(190,170,255,.14),transparent 60%);animation:hwDrift 45s linear infinite}
+@keyframes hwDrift{from{transform:translateX(0)}to{transform:translateX(25%)}}
+.bat{position:absolute;width:42px;animation:hwFly 18s linear infinite}.bat path{animation:hwFlap .25s ease-in-out infinite alternate;transform-origin:32px 12px}
+@keyframes hwFlap{to{transform:scaleY(.45)}}
+.bat.b1{top:16%}.bat.b2{top:26%;width:28px;animation-duration:24s;animation-delay:-7s}.bat.b3{top:10%;width:34px;animation-duration:20s;animation-delay:-13s}.bat.b4{top:34%;width:24px;animation-duration:27s;animation-delay:-3s}.bat.b5{top:20%;width:48px;animation-duration:15s;animation-delay:-10s}.bat.b6{top:7%;width:26px;animation-duration:29s;animation-delay:-19s}
+@keyframes hwFly{0%{transform:translate(-10vw,0)}25%{transform:translate(25vw,4vh)}50%{transform:translate(55vw,-2vh)}75%{transform:translate(85vw,5vh)}100%{transform:translate(115vw,0)}}
+.hw-badge{display:inline-block;font-family:Creepster,Impact,sans-serif;font-size:clamp(22px,3vw,32px);letter-spacing:.05em;color:#ff9a3a;text-shadow:0 3px 0 #000,0 0 18px rgba(255,120,30,.55);margin-bottom:6px}
+body.halloween .hero h1{text-shadow:0 0 30px rgba(138,77,255,.35)}
+body.halloween .btn.primary{background:linear-gradient(90deg,#ffa040,#ff7a1a 45%,#8a4dff);border-color:#ff8a2a;color:#160a04;box-shadow:0 0 20px rgba(255,122,26,.35)}
+body.halloween .grid-wrap,body.halloween .overview,body.halloween .tools{position:relative;box-shadow:0 0 0 1px rgba(138,77,255,.18),0 0 34px rgba(255,122,26,.1)}
+body.halloween .grid-wrap::before,body.halloween .overview::before{content:"";position:absolute;left:0;top:0;width:74px;height:74px;pointer-events:none;opacity:.45;z-index:2;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 90'%3E%3Cg fill='none' stroke='%23e8e2ff' stroke-width='1.2'%3E%3Cpath d='M0 0L90 90M0 0L90 30M0 0L30 90M0 0L90 60M0 0L60 90'/%3E%3Cpath d='M0 18Q14 14 18 0M0 36Q30 28 36 0M0 56Q46 44 56 0M0 76Q62 62 76 0'/%3E%3C/g%3E%3C/svg%3E") no-repeat;border-top-left-radius:inherit}
+body.halloween .cell{background-color:#140d20;border-color:#22182f}
+body.halloween .cell:hover{box-shadow:0 0 0 1px #ff8a2a,0 0 12px rgba(255,122,26,.5)}
+@media (prefers-reduced-motion: reduce){#hw *{animation:none!important}}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="halloween">
+<div id="hw" aria-hidden="true"><div class="hw-moon"></div><div class="hw-stars"></div><svg class="hw-hills" viewBox="0 0 1600 420" preserveAspectRatio="xMidYMax slice"><path d="M0 300 C200 220 340 260 520 230 S860 160 1040 220 1380 260 1600 210 V420 H0Z" fill="#1d1430"/><path d="M0 360 C240 310 420 340 640 320 S1040 290 1240 330 1460 320 1600 300 V420 H0Z" fill="#130c22"/><g fill="#0c0716"><path d="M1130 300 v-110 l40 -45 40 45 v110z"/><path d="M1185 300 v-150 l35 -40 35 40 v150z"/><rect x="1120" y="186" width="18" height="40"/><path d="M1255 300 v-90 l30 -30 30 30 v90z"/></g><g fill="#ffb347" class="hw-win"><rect x="1152" y="210" width="12" height="16"/><rect x="1210" y="175" width="12" height="16"/><rect x="1230" y="230" width="12" height="16"/><rect x="1278" y="240" width="10" height="14"/></g><g fill="#0c0716"><path d="M180 330 q4 -70 -30 -120 M150 210 q-30 -10 -50 -40 M160 240 q30 -20 40 -60" stroke="#0c0716" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M420 330 v-34 a14 14 0 0 1 28 0 v34z"/><path d="M470 334 v-26 a11 11 0 0 1 22 0 v26z"/><rect x="530" y="290" width="6" height="40"/><rect x="519" y="302" width="28" height="6"/></g></svg><div class="hw-pumpkins"><svg viewBox="0 0 100 80" class="pk p1"><rect x="45" y="2" width="8" height="14" rx="3" fill="#3a6a2a"/><ellipse cx="30" cy="46" rx="24" ry="30" fill="#e8600f"/><ellipse cx="70" cy="46" rx="24" ry="30" fill="#e8600f"/><ellipse cx="50" cy="46" rx="26" ry="32" fill="#ff7a1a"/><path d="M30 38l10-10 8 12zM70 38l-10-10-8 12z" class="pkf"/><path d="M28 54q22 20 44 0l-6 4-5-4-6 5-5-5-5 5-6-5-5 4z" class="pkf"/></svg><svg viewBox="0 0 100 80" class="pk p2"><rect x="45" y="2" width="8" height="14" rx="3" fill="#3a6a2a"/><ellipse cx="30" cy="46" rx="24" ry="30" fill="#e8600f"/><ellipse cx="70" cy="46" rx="24" ry="30" fill="#e8600f"/><ellipse cx="50" cy="46" rx="26" ry="32" fill="#ff7a1a"/><path d="M30 38l10-10 8 12zM70 38l-10-10-8 12z" class="pkf"/><path d="M28 54q22 20 44 0l-6 4-5-4-6 5-5-5-5 5-6-5-5 4z" class="pkf"/></svg><svg viewBox="0 0 100 80" class="pk p3"><rect x="45" y="2" width="8" height="14" rx="3" fill="#3a6a2a"/><ellipse cx="30" cy="46" rx="24" ry="30" fill="#e8600f"/><ellipse cx="70" cy="46" rx="24" ry="30" fill="#e8600f"/><ellipse cx="50" cy="46" rx="26" ry="32" fill="#ff7a1a"/><path d="M30 38l10-10 8 12zM70 38l-10-10-8 12z" class="pkf"/><path d="M28 54q22 20 44 0l-6 4-5-4-6 5-5-5-5 5-6-5-5 4z" class="pkf"/></svg></div><div class="hw-fog"></div><svg class="bat b1" viewBox="0 0 64 28"><path d="M32 10c-2-6-6-8-8-8 1 3 0 5-2 6-3-3-9-4-14-2 4 2 6 6 6 10 4-3 9-2 12 1 2-2 4-3 6-3s4 1 6 3c3-3 8-4 12-1 0-4 2-8 6-10-5-2-11-1-14 2-2-1-3-3-2-6-2 0-6 2-8 8z" fill="#0d0716"/></svg><svg class="bat b2" viewBox="0 0 64 28"><path d="M32 10c-2-6-6-8-8-8 1 3 0 5-2 6-3-3-9-4-14-2 4 2 6 6 6 10 4-3 9-2 12 1 2-2 4-3 6-3s4 1 6 3c3-3 8-4 12-1 0-4 2-8 6-10-5-2-11-1-14 2-2-1-3-3-2-6-2 0-6 2-8 8z" fill="#0d0716"/></svg><svg class="bat b3" viewBox="0 0 64 28"><path d="M32 10c-2-6-6-8-8-8 1 3 0 5-2 6-3-3-9-4-14-2 4 2 6 6 6 10 4-3 9-2 12 1 2-2 4-3 6-3s4 1 6 3c3-3 8-4 12-1 0-4 2-8 6-10-5-2-11-1-14 2-2-1-3-3-2-6-2 0-6 2-8 8z" fill="#0d0716"/></svg><svg class="bat b4" viewBox="0 0 64 28"><path d="M32 10c-2-6-6-8-8-8 1 3 0 5-2 6-3-3-9-4-14-2 4 2 6 6 6 10 4-3 9-2 12 1 2-2 4-3 6-3s4 1 6 3c3-3 8-4 12-1 0-4 2-8 6-10-5-2-11-1-14 2-2-1-3-3-2-6-2 0-6 2-8 8z" fill="#0d0716"/></svg><svg class="bat b5" viewBox="0 0 64 28"><path d="M32 10c-2-6-6-8-8-8 1 3 0 5-2 6-3-3-9-4-14-2 4 2 6 6 6 10 4-3 9-2 12 1 2-2 4-3 6-3s4 1 6 3c3-3 8-4 12-1 0-4 2-8 6-10-5-2-11-1-14 2-2-1-3-3-2-6-2 0-6 2-8 8z" fill="#0d0716"/></svg><svg class="bat b6" viewBox="0 0 64 28"><path d="M32 10c-2-6-6-8-8-8 1 3 0 5-2 6-3-3-9-4-14-2 4 2 6 6 6 10 4-3 9-2 12 1 2-2 4-3 6-3s4 1 6 3c3-3 8-4 12-1 0-4 2-8 6-10-5-2-11-1-14 2-2-1-3-3-2-6-2 0-6 2-8 8z" fill="#0d0716"/></svg></div>
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#" aria-label="VibeVibe Memory Wall home">
       <svg viewBox="-2 -2 100 100" aria-hidden="true">
-        <rect x="0" y="0" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="35" y="0" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="70" y="0" width="26" height="26" rx="6" fill="#DFF902" opacity="0.38"/><rect x="0" y="35" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="35" y="35" width="26" height="26" rx="6" fill="#DFF902"/><rect x="70" y="35" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="0" y="70" width="26" height="26" rx="6" fill="#DFF902" opacity="0.38"/><rect x="35" y="70" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="70" y="70" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/>
+        <rect x="0" y="0" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="35" y="0" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="70" y="0" width="26" height="26" rx="6" fill="#FF8A2A" opacity="0.38"/><rect x="0" y="35" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="35" y="35" width="26" height="26" rx="6" fill="#FF8A2A"/><rect x="70" y="35" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="0" y="70" width="26" height="26" rx="6" fill="#FF8A2A" opacity="0.38"/><rect x="35" y="70" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/><rect x="70" y="70" width="26" height="26" rx="6" fill="#141618" stroke="#4A5056" stroke-width="3"/>
         <path d="M39.5 42.5 L42 47 L44.5 42.5 M49.5 41.5 L46.8 47.5 M51.5 42.5 L54 47 L56.5 42.5 M42 52 Q48 56.5 54 52" fill="none" stroke="#0B0C0D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span class="word">vibe<span class="sl">/</span>vibe</span>
       <span class="tag">Memory Wall</span>
     </a>
     <span class="spacer"></span>
-    <a class="btn play gangbtn" href="/" aria-label="Play VIBE GANG"><span aria-hidden="true">🏙️</span> <span class="pl-long">VIBE GANG</span><span class="pl-short">Gang</span></a>
+    <a class="btn play gangbtn heroesbtn" href="/" aria-label="Play VIBE HEROES"><span aria-hidden="true">🎯</span> <span class="pl-long">VIBE HEROES</span><span class="pl-short">Heroes</span></a>
     <button class="btn play" id="statsbtn" type="button" aria-label="Live vibe/vibe stats" hidden><span aria-hidden="true">📊</span> <span class="pl-long">Live stats</span><span class="pl-short">Stats</span></button>
     <button class="btn play" id="play" type="button" aria-label="Play VIBE RUN" hidden><span aria-hidden="true">🎮</span> <span class="pl-long">Play VIBE RUN</span><span class="pl-short">Play</span></button>
     <button class="btn primary" id="cta" type="button"><span class="cta-long">Leave your memory</span><span class="cta-short">+ Memory</span></button>
@@ -325,6 +359,7 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
 
   <section class="hero" aria-labelledby="h1">
     <div>
+      <div class="hw-badge">🎃 Halloween on the wall</div>
       <h1 id="h1"><span class="cnt">10,000</span> cells.<br>One shared memory.</h1>
       <p class="lead">Every cell on this wall keeps a small piece of the VibeVibe testnet community’s history: a name, a few words, maybe a picture.</p>
       <dl class="stats" aria-live="polite">
@@ -338,7 +373,7 @@ footer{color:var(--muted);font-size:14px;padding:40px 0 60px}
     <div class="overview">
       <canvas id="mini" width="300" height="300" aria-label="Overview of all 10,000 cells. Each row of ten lines is one page. Click to jump to that page." role="img"></canvas>
       <div class="cap"><span>The whole wall, 100 × 100</span>
-        <span><span class="key"><i style="background:#DFF902"></i>Taken</span>&nbsp;&nbsp;<span class="key"><i style="background:#2A2E32"></i>Free</span></span></div>
+        <span><span class="key"><i style="background:#FF8A2A"></i>Taken</span>&nbsp;&nbsp;<span class="key"><i style="background:#2A2E32"></i>Free</span></span></div>
     </div>
   </section>
 
@@ -587,7 +622,7 @@ function renderMini(){
   g.fillStyle='#0F1112'; g.fillRect(0,0,300,300);
   for(var i=0;i<TOTAL;i++){
     var w=wall.get(i+1);
-    g.fillStyle=w?(w.hidden?"#4A4F54":"#DFF902"):"#272B2F";
+    g.fillStyle=w?(w.hidden?"#4A4F54":"#FF8A2A"):"#272B2F";
     g.fillRect((i%100)*s,Math.floor(i/100)*s,s-1,s-1);
   }
   Object.keys(crowns).forEach(function(c){ var k=c-1; g.fillStyle=['','#FFD24A','#E5E7EB','#E0A16B'][crowns[c]]; g.fillRect((k%100)*s-1,Math.floor(k/100)*s-1,s+1,s+1); });
